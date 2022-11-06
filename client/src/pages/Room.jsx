@@ -17,6 +17,7 @@ import Chat from "../components/Chat";
 
 function Room() {
   const { roomCode } = useParams();
+  const guest = JSON.parse(localStorage.getItem("guest"));
   const [roomInfo, setRoomInfo] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [openChat, setOpenChat] = useState(false);
@@ -46,12 +47,16 @@ function Room() {
       : fetchRoom();
 
     fetchToken();
+  }, []);
+
+  useEffect(() => {
     chatSocket.onopen = (e) => {
+      chatSocket.send(
+        JSON.stringify({
+          connection: { guest_id: guest.guest_id },
+        })
+      );
       console.log("Successfully connected to the WebSocket.");
-    };
-    chatSocket.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      console.log("Data:", data);
     };
   }, []);
 

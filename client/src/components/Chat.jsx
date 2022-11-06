@@ -6,7 +6,9 @@ import { useState } from "react";
 import { useEffect } from "react";
 
 function Chat({ openChat, setOpenChat, chatSocket }) {
+  const guest = JSON.parse(localStorage.getItem("guest"));
   const [formData, setFormData] = useState({ message: "" });
+  const [messages, setMessages] = useState([]);
   const { message } = formData;
   const onFormChange = (e) => {
     setFormData((prevState) => ({
@@ -16,9 +18,28 @@ function Chat({ openChat, setOpenChat, chatSocket }) {
   };
   const onFormSubmit = (e) => {
     e.preventDefault();
-    chatSocket.send(JSON.stringify({ message }));
+
+    chatSocket.send(
+      JSON.stringify({
+        guest_id: guest.guest_id,
+        message,
+      })
+    );
     setFormData({ message: "" });
   };
+  useEffect(() => {
+    chatSocket.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      console.log(data);
+      if (data.message) {
+        setMessages((prevState) => [...prevState, data.message]);
+      }
+      if (data.connection) {
+        setMessages((prevState) => [...prevState, data.connection]);
+      }
+    };
+  }, []);
+
   return (
     <Transition.Root show={openChat} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={setOpenChat}>
@@ -74,8 +95,52 @@ function Chat({ openChat, setOpenChat, chatSocket }) {
                       </Dialog.Title>
                     </div>
                     <div className="relative flex-1 px-4 sm:px-6 flex flex-col ">
-                      <div className="flex-1 border rounded-xl my-2">
+                      <div className="flex-1 border rounded-xl my-2 p-2 w-full overflow-y-auto">
                         {/* messages */}
+                        {messages?.map((message) => {
+                          if (message.guest) {
+                            return (
+                              <div
+                                key={message.guest}
+                                className="flex items-center justify-center text-gray-400 text-sm"
+                              >
+                                {message.guest} has joined the room
+                              </div>
+                            );
+                          } else if (message.guest_id === guest.guest_id) {
+                            return (
+                              <div
+                                key={message._id}
+                                className="flex justify-end items-center gap-2 my-2"
+                              >
+                                <div className="p-2 bg-gray-300 rounded-xl w-fit max-w-xs">
+                                  <p className="text-sm break-words">
+                                    {message.message}
+                                  </p>
+                                </div>
+                                <div className="flex items-center justify-center rounded-full bg-gray-300 w-8 h-8">
+                                  {message.nickname[0]}
+                                </div>
+                              </div>
+                            );
+                          } else {
+                            return (
+                              <div
+                                key={message._id}
+                                className="flex justify-start items-center gap-2 my-2"
+                              >
+                                <div className="flex items-center justify-center rounded-full bg-gray-300 w-8 h-8">
+                                  {message.nickname[0]}
+                                </div>
+                                <div className="p-2 bg-gray-300 rounded-xl w-fit max-w-xs">
+                                  <p className="text-sm break-words">
+                                    {message.message}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          }
+                        })}
                       </div>
                       <div className=" my-2">
                         <form
