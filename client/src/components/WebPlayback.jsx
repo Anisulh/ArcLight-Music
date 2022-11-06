@@ -59,7 +59,7 @@ function WebPlayback({ token }) {
 
       player?.connect();
     };
-    return () => player.disconnect();
+    return () => player?.disconnect();
   }, []);
   if (!is_active) {
     return (
@@ -68,6 +68,9 @@ function WebPlayback({ token }) {
           <h2 className="font-bold">
             Instance not active. Transfer your playback using your Spotify app
           </h2>
+          <a href="#" target="_blank">
+            Learn More
+          </a>
         </div>
       </>
     );
@@ -110,7 +113,6 @@ function WebPlayback({ token }) {
             <button
               className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
               onClick={() => {
-                console.log("toggle");
                 player?.togglePlay();
               }}
             >

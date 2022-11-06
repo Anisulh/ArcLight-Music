@@ -12,14 +12,21 @@ import SearchResult from "../components/SearchResult";
 import SearchMusic from "../components/SearchMusic";
 import { Dialog, Transition } from "@headlessui/react";
 import WebPlayback from "../components/WebPlayback";
+import { connect } from "../services/chatService";
+import Chat from "../components/Chat";
 
 function Room() {
   const { roomCode } = useParams();
   const [roomInfo, setRoomInfo] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [openChat, setOpenChat] = useState(false);
   const [resultModalOpen, setResultModalOpen] = useState(false);
   const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
+  const [chatSocket, setChatSocket] = useState(
+    new WebSocket(`ws://127.0.0.1:8000/ws/chat/${roomCode}/`)
+  );
+
   useEffect(() => {
     const fetchRoom = async () => {
       const data = fetchRoomInfo(roomCode);
@@ -37,13 +44,26 @@ function Room() {
     roomData && roomData.code === roomCode
       ? setRoomInfo(roomData)
       : fetchRoom();
+
     fetchToken();
+    chatSocket.onopen = (e) => {
+      console.log("Successfully connected to the WebSocket.");
+    };
+    chatSocket.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      console.log("Data:", data);
+    };
   }, []);
 
   return (
     <>
-      <RoomNav setModalOpen={setModalOpen} />
+      <RoomNav setModalOpen={setModalOpen} setOpenChat={setOpenChat} />
       <RoomInfo modalOpen={modalOpen} setModalOpen={setModalOpen} />
+      <Chat
+        openChat={openChat}
+        setOpenChat={setOpenChat}
+        chatSocket={chatSocket}
+      />
       <div>
         <SearchMusic
           setSearchResults={setSearchResults}
@@ -86,12 +106,12 @@ function Room() {
           </Transition.Root>
         )}
       </div>
-      <div className="">
+      {/* <div className="">
         <div className="border rounded-xl shadow-xl bottom_center_align w-full max-w-md md:max-w-xl lg:max-w-5xl mx-auto -bottom-12 lg:bottom-0"></div>
         {roomInfo?.access_token && (
           <WebPlayback token={roomInfo?.access_token} />
         )}
-      </div>
+      </div> */}
     </>
   );
 }

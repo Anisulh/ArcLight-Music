@@ -8,21 +8,25 @@ function JoinRoomForm() {
   const [code, setCode] = useState("");
   const onFormSubmission = async (e) => {
     e.preventDefault();
-    const data = await joinRoom(code);
-    const temp = { ...data };
-    delete temp.host_session_id;
-    //check if the user's host_session_id for last room is the session id for the joining room; if it is then they were the host
-    if (localStorage.getItem("host_session_id") === data.host_session_id) {
-      temp.host = true;
-    } else {
-      temp.host = false;
-    }
+    const response = await joinRoom(code);
+    console.log(response);
+    if (response.code) {
+      console.log(response);
+      let temp;
 
-    if (localStorage.getItem("recent_room")) {
-      localStorage.removeItem("recent_room");
-    }
-    localStorage.setItem("recent_room", JSON.stringify(temp));
-    if (response.ok) {
+      //check if the user's host_id for last room is the session id for the joining room; if it is then they were the host
+      if (
+        JSON.parse(localStorage.getItem("guest")).guest_id === response.host_id
+      ) {
+        temp = { ...response, host: true };
+      } else {
+        temp = { ...response, host: false };
+      }
+      console.log(temp);
+      if (localStorage.getItem("recent_room")) {
+        localStorage.removeItem("recent_room");
+      }
+      localStorage.setItem("recent_room", JSON.stringify(temp));
       navigate(`/room/${code}`);
     } else {
       console.log("room not found");
