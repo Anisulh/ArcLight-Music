@@ -10,9 +10,9 @@ environ.Env.read_env()
 BASE_URL = "https://api.spotify.com/v1/me/"
 
 
-def get_user_tokens(host):
+def get_user_tokens(guest):
     try:
-        user_tokens = SpotifyToken.objects.get(user=host)
+        user_tokens = SpotifyToken.objects.get(user=guest)
         print("get_user_tokens: tokens exist")
         return user_tokens
     except SpotifyToken.DoesNotExist:
@@ -21,9 +21,9 @@ def get_user_tokens(host):
 
 
 def update_or_create_user_tokens(
-    host, access_token, token_type, expires_in, refresh_token
+    guest, access_token, token_type, expires_in, refresh_token
 ):
-    tokens = get_user_tokens(host)
+    tokens = get_user_tokens(guest)
     expires_in = timezone.now() + timedelta(seconds=expires_in)
 
     if tokens:
@@ -39,7 +39,7 @@ def update_or_create_user_tokens(
     else:
         print("update_or_create_user-tokens: tokens dont exists")
         tokens = SpotifyToken(
-            user=host,
+            user=guest,
             access_token=access_token,
             refresh_token=refresh_token,
             token_type=token_type,
@@ -53,28 +53,28 @@ def update_or_create_user_tokens(
 # checks if user has a token and if they do then refreshes it
 
 
-def check_token_if_valid(host, respond=False):
-    tokens = get_user_tokens(host)
+def check_token_if_valid(guest, respond=False):
+    tokens = get_user_tokens(guest)
     if tokens:
         print("check_token_if_valid: tokens exist")
         expiry = tokens.expires_in
         if expiry <= timezone.now():
             print("check_token_if_valid: tokens expired")
-            refresh_spotify_token(host)
+            refresh_spotify_token(guest)
             print("check_token_if_valid: tokens refreshed")
             if respond:
-                token = get_user_tokens(host)
+                token = get_user_tokens(guest)
                 return token.access_token
         if respond:
-            token = get_user_tokens(host)
+            token = get_user_tokens(guest)
             return token.access_token
         return True
     print("check_token_if_valid: tokens dont exist")
     return False
 
 
-def refresh_spotify_token(host):
-    refresh_token = get_user_tokens(host).refresh_token
+def refresh_spotify_token(guest):
+    refresh_token = get_user_tokens(guest).refresh_token
     print("refreshing tokens")
     response = post(
         "https://accounts.spotify.com/api/token",
@@ -91,12 +91,12 @@ def refresh_spotify_token(host):
     expires_in = response.get("expires_in")
 
     update_or_create_user_tokens(
-        host, access_token, token_type, expires_in, refresh_token
+        guest, access_token, token_type, expires_in, refresh_token
     )
 
 
-def execute_spotify_api_request(host, endpoint, post_=False, put_=False, url=BASE_URL):
-    tokens = get_user_tokens(host)
+def execute_spotify_api_request(guest, endpoint, post_=False, put_=False, url=BASE_URL):
+    tokens = get_user_tokens(guest)
     headers = {
         "Content-Type": "application/json",
         "Authorization": "Bearer " + tokens.access_token,
@@ -132,10 +132,46 @@ def prev_song(user):
     return execute_spotify_api_request(user, "player/previous", post_=True)
 
 
-def search_function(query, types, limit, host):
+def search_function(query, types, limit, guest):
     formatted_query = quote(query)
     return execute_spotify_api_request(
-        host,
+        guest,
         endpoint=f"?q={formatted_query}&type={types}&limit={limit}",
         url="https://api.spotify.com/v1/search",
     )
+
+
+def set_track(guest, uri, position):
+    try:
+        tokens = get_user_tokens(guest)
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + tokens.access_token,
+            "body": {"uris": [uri], "position_ms": position},
+        }
+
+        response = put(BASE_URL + "player/play", headers=headers)
+        print("response:", response)
+        return response.json()
+    except:
+        print("error")
+        return {"error": "Issue with request"}
+
+
+def transfer_play(guest, device_id):
+    print(guest, device_id)
+    try:
+        tokens = get_user_tokens(guest)
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + tokens.access_token,
+            "Body": {"device_ids": [device_id]},
+        }
+        print(headers)
+
+        response = put(BASE_URL + "player", headers=headers)
+        print("response:", response)
+        return response.json()
+    except:
+        print("error")
+        return {"error": "Issue with request"}

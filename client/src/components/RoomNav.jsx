@@ -1,4 +1,8 @@
 import { Disclosure, Menu, Transition } from "@headlessui/react";
+import {
+  EllipsisVerticalIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
 import ChatBubbleBottomCenterIcon from "@heroicons/react/24/outline/ChatBubbleBottomCenterIcon";
 import React from "react";
 import { Fragment } from "react";
@@ -8,7 +12,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-function RoomNav({ setModalOpen, setOpenChat }) {
+function RoomNav({ setModalOpen, setOpenChat, setSearchActive, searchActive }) {
   const navigate = useNavigate();
   const room = JSON.parse(localStorage.getItem("recent_room"));
   const settings = () => {
@@ -41,30 +45,24 @@ function RoomNav({ setModalOpen, setOpenChat }) {
             <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
               {/* Profile dropdown */}
               <Menu as="div" className="relative ml-3">
-                <div className="flex justify-start items-center gap-1">
-                  <Menu.Button
-                    className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                <div className="flex justify-start items-center gap-4">
+                  <button
+                    className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 p-1"
+                    onClick={() => setSearchActive(!searchActive)}
+                  >
+                    <span className="sr-only">Open Chat</span>
+                    <MagnifyingGlassIcon className="text-white h-6 w-6" />
+                  </button>
+                  <button
+                    className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 p-1"
                     onClick={() => setOpenChat(true)}
                   >
                     <span className="sr-only">Open Chat</span>
                     <ChatBubbleBottomCenterIcon className="text-white h-6 w-6" />
-                  </Menu.Button>
-                  <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                  </button>
+                  <Menu.Button className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 -ml-1">
                     <span className="sr-only">Open user menu</span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-6 h-6 text-white"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
-                      />
-                    </svg>
+                    <EllipsisVerticalIcon className="text-white h-6 w-6" />
                   </Menu.Button>
                 </div>
                 <Transition

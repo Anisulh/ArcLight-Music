@@ -17,7 +17,9 @@ from .utility import (
     play_song,
     prev_song,
     search_function,
+    set_track,
     update_or_create_user_tokens,
+    transfer_play,
 )
 
 env = environ.Env()
@@ -44,19 +46,19 @@ SCOPES = [
 
 # URL: spotify/authenticate
 # DATA: guest_id
-# Checks if host is authenticated and redirects them to AuthURL if they aren't
+# Checks if guest is authenticated and redirects them to AuthURL if they aren't
 @api_view(["POST"])
 def IsAuthenticated(request, format=None):
     if request.method == "POST":
-        host_id = request.data.get("host_id")
-        print("host_id:", host_id)
-        # store host_id in sessions if not already there
-        if "host_id" not in request.session:
+        guest_id = request.data.get("guest_id")
+        print("guest_id:", guest_id)
+        # store guest_id in sessions if not already there
+        if "guest_id" not in request.session:
             print("creating session")
-            request.session["host_id"] = host_id
+            request.session["guest_id"] = guest_id
             print("session created")
 
-        is_authenticated = check_token_if_valid(host_id)
+        is_authenticated = check_token_if_valid(guest_id)
 
         if not is_authenticated:
             print("user not authenticated")
@@ -122,68 +124,12 @@ def spotify_callback(request, format=None):
         token_type = response.get("token_type")
         refresh_token = response.get("refresh_token")
         expires_in = response.get("expires_in")
-        host_id = request.data.get("host_id")
+        guest_id = request.data.get("guest_id")
         print("updating or creating tokens:")
         update_or_create_user_tokens(
-            host_id, access_token, token_type, expires_in, refresh_token
+            guest_id, access_token, token_type, expires_in, refresh_token
         )
         return Response({"success": True}, status=status.HTTP_201_CREATED)
-
-
-# URL: spotify/currently-playing
-# DATA: room_code,
-# sends a request to spotify api to get what the currenty song thats playing
-
-
-@api_view(["POST"])
-def CurrentlyPlaying(request, format=None):
-    room_code = request.data.get("room_code")
-    if not room_code:
-        return Response({"error": "room_code not given"})
-    try:
-        room = Room.objects.get(code=room_code)
-    except Room.DoesNotExist:
-        return Response(
-            {"bad request": "room not found"}, status=status.HTTP_404_NOT_FOUND
-        )
-
-    host_id = room.host_id
-    endpoint = "player/currently-playing"
-    response = execute_spotify_api_request(host_id, endpoint)
-
-    if "error" in response or "item" not in response:
-        return Response({}, status=status.HTTP_204_NO_CONTENT)
-
-    item = response.get("item")
-    duration = item.get("duration_ms")
-    progress = response.get("progress_ms")
-    album_cover = (
-        item.get("album").get("images")[0].get("url")
-    )  # album > images > first image > its url
-    is_playing = response.get("is_playing")
-    song_id = item.get("id")
-    title = item.get("name")
-
-    artist_string = ""
-
-    for i, artist in enumerate(item.get("artists")):
-        if i > 0:
-            artist_string += ", "
-        name = artist.get("name")
-        artist_string += name
-
-    song = {
-        "title": title,
-        "artist": artist_string,
-        "duration": duration,
-        "time": progress,
-        "image_url": album_cover,
-        "is_playing": is_playing,
-        "votes": 0,
-        "id": song_id,
-    }
-
-    return Response(song, status=status.HTTP_200_OK)
 
 
 # URL: spotify/pause
@@ -209,10 +155,8 @@ def PauseSong(request, format=None):
 # URL: spotify/play
 # DATA: room_code, guest_id
 # sends a request to spotify api to play music
-
-
 @api_view(["PUT"])
-def PlaySong(request, format=None):
+def resumeSong(request, format=None):
     room_code = request.data.get("room_code")
     guest_id = request.data.get("guest_id")
     if not room_code or guest_id:
@@ -231,8 +175,6 @@ def PlaySong(request, format=None):
 # URL: spotify/next
 # DATA: room_code, guest_id
 # sends a request to spotify api to play the next song
-
-
 @api_view(["POST"])
 def NextSong(request, format=None):
     room_code = request.data.get("room_code")
@@ -243,24 +185,15 @@ def NextSong(request, format=None):
         room = Room.objects.get(code=room_code)
     except Room.DoesNotExist:
         return Response({"error": "room not found"}, status=status.HTTP_404_NOT_FOUND)
-    votes = Vote.objects.filter(room=room, song_id=room.currently_playing)
-    votes_needed = room.votes_to_skip
-
-    if guest_id == room.host_id or len(votes) + 1 >= votes_needed:
-        votes.delete()
+    if guest_id == room.host_id or room.guest_controller:
         next_song(room.host_id)
-    else:
-        vote = Vote(user=guest_id, room=room, song_id=room.currently_playing)
-        vote.save()
-
-    return Response({}, status.HTTP_204_NO_CONTENT)
+        return Response({}, status.HTTP_204_NO_CONTENT)
+    return Response({}, status.HTTP_403_FORBIDDEN)
 
 
 # URL: spotify/prev
 # DATA: room_code, guest_id
 # sends a request to spotify api to play the previous song
-
-
 @api_view(["POST"])
 def PrevSong(request, format=None):
     room_code = request.data.get("room_code")
@@ -271,17 +204,10 @@ def PrevSong(request, format=None):
         room = Room.objects.get(code=room_code)
     except Room.DoesNotExist:
         return Response({"error": "room not found"}, status=status.HTTP_404_NOT_FOUND)
-    votes_needed = room.votes_to_skip
-    votes = Vote.objects.filter(room=room, song_id=room.currently_playing)
-
-    if guest_id == room.host_id or len(votes) + 1 >= votes_needed:
-        votes.delete()
+    if guest_id == room.host_id or room.guest_controller:
         prev_song(room.host_id)
-    else:
-        vote = Vote(user=guest_id, room=room, song_id=room.currently_playing)
-        vote.save()
-
-    return Response({}, status.HTTP_204_NO_CONTENT)
+        return Response({}, status.HTTP_204_NO_CONTENT)
+    return Response({}, status.HTTP_403_FORBIDDEN)
 
 
 @api_view(["POST"])
@@ -301,6 +227,38 @@ def Search(request, format=None):
 
 @api_view(["GET"])
 def GetSpotifyToken(request, format=None):
-    host_id = request.session.get("host_id")
-    access_token = check_token_if_valid(host_id, respond=True)
+    guest_id = request.session.get("guest_id")
+    access_token = check_token_if_valid(guest_id, respond=True)
     return Response({"access_token": access_token})
+
+
+# URL: spotify/set-track
+# DATA: guest_id, uri, position
+# sends a request to spotify api to play specific song at specific position
+@api_view(["PUT"])
+def setTrack(request, format=None):
+    guest_id = request.session.get("guest_id")
+    uri = request.data.get("uri")
+    position = request.data.get("position")
+    if guest_id and uri and position:
+        response = set_track(guest_id, uri, position)
+        if "error" in response:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# URL: spotify/transfer
+# DATA: guest_id, device_id
+# sends a request to spotify api to transfer the playback
+@api_view(["PUT"])
+def transferPlay(request, format=None):
+    device_id = request.data.get("device_id")
+    guest_id = request.data.get("guest_id")
+    if device_id and guest_id:
+        response = transfer_play(guest_id, device_id)
+        if "error" in response:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    return Response(
+        {"error": "no device or guest id given"}, status=status.HTTP_400_BAD_REQUEST
+    )

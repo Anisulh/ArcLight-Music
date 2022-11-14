@@ -5,6 +5,7 @@ import Redirect from "./pages/Redirect";
 import Room from "./pages/Room";
 import RoomEntry from "./pages/RoomEntry";
 import Test from "./pages/Test";
+import TransferPlayback from "./pages/TransferPlayback";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/room" element={<RoomEntry />} />
         <Route path="/room/:roomCode" element={<Room />} />
         <Route path="/test" element={<Test />} />
+        <Route path="/learn-more" element={<TransferPlayback />} />
       </Routes>
     </Router>
   );

@@ -1,19 +1,16 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchRoomInfo } from "../services/roomService";
 import RoomInfo from "../components/RoomInfo";
 import {
   authenticateSpotify,
-  fetchCurrentPlaying,
   getSpotifyToken,
 } from "../services/spotifyServices";
 import RoomNav from "../components/RoomNav";
-import SearchResult from "../components/SearchResult";
 import SearchMusic from "../components/SearchMusic";
-import { Dialog, Transition } from "@headlessui/react";
-import WebPlayback from "../components/WebPlayback";
-import { connect } from "../services/chatService";
 import Chat from "../components/Chat";
+import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
+import WebPlayback from "../components/WebPlayback";
 
 function Room() {
   const { roomCode } = useParams();
@@ -21,9 +18,8 @@ function Room() {
   const [roomInfo, setRoomInfo] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [openChat, setOpenChat] = useState(false);
-  const [resultModalOpen, setResultModalOpen] = useState(false);
-  const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchActive, setSearchActive] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [chatSocket, setChatSocket] = useState(
     new WebSocket(`ws://127.0.0.1:8000/ws/chat/${roomCode}/`)
   );
@@ -34,18 +30,14 @@ function Room() {
       setRoomInfo(data);
     };
     const fetchToken = async () => {
-      authenticateSpotify(setRoomInfo);
+      authenticateSpotify(setRoomInfo, guest.guest_id);
       const token = await getSpotifyToken();
       setRoomInfo((prevState) => ({
         ...prevState,
         access_token: token.access_token,
       }));
     };
-    const roomData = JSON.parse(localStorage.getItem("recent_room"));
-    roomData && roomData.code === roomCode
-      ? setRoomInfo(roomData)
-      : fetchRoom();
-
+    fetchRoom();
     fetchToken();
   }, []);
 
@@ -61,63 +53,55 @@ function Room() {
   }, []);
 
   return (
-    <>
-      <RoomNav setModalOpen={setModalOpen} setOpenChat={setOpenChat} />
+    <div>
+      <RoomNav
+        setModalOpen={setModalOpen}
+        setOpenChat={setOpenChat}
+        setSearchActive={setSearchActive}
+        searchActive={searchActive}
+      />
       <RoomInfo modalOpen={modalOpen} setModalOpen={setModalOpen} />
       <Chat
         openChat={openChat}
         setOpenChat={setOpenChat}
         chatSocket={chatSocket}
       />
-      <div>
-        <SearchMusic
-          setSearchResults={setSearchResults}
-          setResultModalOpen={setResultModalOpen}
-        />
-        {resultModalOpen && (
-          <Transition.Root show={resultModalOpen} as={Fragment}>
-            <Dialog
-              as="div"
-              id="wrapper"
-              onClose={() => setResultModalOpen(false)}
-            >
-              <div>
-                <div className="flex items-end justify-center p-4 text-center  sm:items-center sm:p-0">
-                  <Transition.Child
-                    as={Fragment}
-                    enter="ease-out duration-300"
-                    enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                    enterTo="opacity-100 translate-y-0 sm:scale-100"
-                    leave="ease-in duration-200"
-                    leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-                    leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                  >
-                    <Dialog.Panel className="fixed max-h-52 overflow-y-auto inset-0 transform mx-10 sm:mx-28 md:mx-40  lg:mx-52 my-5 rounded-lg bg-white text-left mt-52 shadow-xl transition-all ">
-                      <div className="bg-white px-4 pb-4  sm:p- sm:pb-4">
-                        {searchResults.map((result, index) => (
-                          <SearchResult
-                            key={index}
-                            result={result}
-                            setCurrentlyPlaying={setCurrentlyPlaying}
-                            setResultModalOpen={setResultModalOpen}
-                          />
-                        ))}
-                      </div>
-                    </Dialog.Panel>
-                  </Transition.Child>
-                </div>
-              </div>
-            </Dialog>
-          </Transition.Root>
-        )}
+      <div className="flex justify-end items-center max-w-7xl px-2 sm:px-6 lg:px-8 relative">
+        {searchActive && <SearchMusic />}
       </div>
-      {/* <div className="">
+      <div className="mx-auto max-w-7xl flex ">
+        <div className="relative p-2 sm:px-6 lg:px-8 ">
+          <h2 className="text-lg w-auto">Room Code: {roomCode}</h2>
+          <button
+            className="absolute right-0 top-0 hover:bg-gray-200 rounded-xl p-1"
+            onClick={() => {
+              navigator.clipboard.writeText(roomCode);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            }}
+          >
+            <ClipboardDocumentIcon className="h-4 w-4 text-gray-500 " />
+          </button>
+          {copied && (
+            <p className="bg-gray-800 text-white rounded-xl shadow-md text-xs px-2 py-1 w-fit absolute top-1 -right-24">
+              {" "}
+              Code copied!
+            </p>
+          )}
+        </div>
+      </div>
+      <div>
         <div className="border rounded-xl shadow-xl bottom_center_align w-full max-w-md md:max-w-xl lg:max-w-5xl mx-auto -bottom-12 lg:bottom-0"></div>
         {roomInfo?.access_token && (
-          <WebPlayback token={roomInfo?.access_token} />
+          <WebPlayback
+            token={roomInfo?.access_token}
+            chatSocket={chatSocket}
+            roomCode={roomCode}
+            id={guest.guest_id}
+          />
         )}
-      </div> */}
-    </>
+      </div>
+    </div>
   );
 }
 

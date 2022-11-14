@@ -35,10 +35,16 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         print("recieved")
-        print(text_data_json)
 
         # Send message to room group
-        if "connection" in text_data_json:
+        if "player" in text_data_json:
+            uri = text_data_json["player"]["uri"]
+            position = text_data_json["player"]["position"]  #! error here
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {"type": "spotify_message", "uri": uri, "position": position},
+            )
+        elif "connection" in text_data_json:
             print(text_data_json["connection"])
             guest = text_data_json["connection"]["guest_id"]
             nickname = await self.get_guest(guest)
@@ -85,3 +91,11 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         guest = event["guest"]
         # Send message to WebSocket
         await self.send(text_data=json.dumps({"connection": {"guest": guest}}))
+
+    async def spotify_message(self, event):
+        uri = event["uri"]
+        position = event["position"]
+        # Send message to WebSocket
+        await self.send(
+            text_data=json.dumps({"spotify": {"uri": uri, "position": position}})
+        )

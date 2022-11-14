@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 export const onPause = (roomCode, guest_id) => {
   const requestOptions = {
     method: "PUT",
@@ -86,8 +88,7 @@ export const fetchCurrentPlaying = async (room_code) => {
   }
 };
 
-export const authenticateSpotify = async (setRoomInfo) => {
-  const room = JSON.parse(localStorage.getItem("recent_room"));
+export const authenticateSpotify = async (setRoomInfo, guest_id) => {
   const requestOptions = {
     method: "POST",
     credentials: "include",
@@ -95,7 +96,7 @@ export const authenticateSpotify = async (setRoomInfo) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      host_id: room.host_id,
+      guest_id: guest_id,
     }),
   };
   try {
@@ -121,13 +122,13 @@ export const authenticateSpotify = async (setRoomInfo) => {
 };
 
 export const fetchRedirect = async () => {
-  const room = JSON.parse(localStorage.getItem("recent_room"));
+  const guest = JSON.parse(localStorage.getItem("guest"));
   const requestOptions = {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      host_id: room.host_id,
+      guest_id: guest.guest_id,
     }),
   };
   try {
@@ -180,3 +181,35 @@ export const fetchSearch = async (query, type) => {
     console.log(error);
   }
 };
+
+
+export const sendSong = async (token, songInfo) => {
+  const { uri, position } = songInfo
+  try {
+    const response = await axios.put("https://api.spotify.com/v1/me/player", { uris: [uri], position_ms: position },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+    console.log(response);
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export const transferPlayback = async (token, device_id) => {
+  try {
+    await axios.put(
+      "https://api.spotify.com/v1/me/player", { device_ids: [device_id], play: true },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    )
+  } catch (error) {
+    console.log(error)
+  }
+
+}

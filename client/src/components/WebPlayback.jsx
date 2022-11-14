@@ -5,6 +5,14 @@ import {
   PlayIcon,
 } from "@heroicons/react/24/outline";
 import React, { useEffect, useState } from "react";
+import {
+  onNextSong,
+  onPause,
+  onPlay,
+  onPreviousSong,
+  sendSong,
+  transferPlayback,
+} from "../services/spotifyServices";
 
 const track = {
   name: "",
@@ -14,11 +22,14 @@ const track = {
   artists: [{ name: "" }],
 };
 
-function WebPlayback({ token }) {
-  const [player, setPlayer] = useState(null);
+function WebPlayback({ token, chatSocket, roomCode, guest_id }) {
+  const guest = JSON.parse(localStorage.getItem("guest"));
+  const [deviceID, setDeviceID] = useState(null);
   const [is_paused, setPaused] = useState(false);
   const [is_active, setActive] = useState(false);
-  const [current_track, setTrack] = useState(track);
+  const [player, setPlayer] = useState(undefined);
+  const [currentTrack, setTrack] = useState(track);
+
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://sdk.scdn.co/spotify-player.js";
@@ -26,17 +37,19 @@ function WebPlayback({ token }) {
 
     document.body.appendChild(script);
 
-    window.onSpotifyWebPlaybackSDKReady = async () => {
-      const player = await new window.Spotify.Player({
-        name: "Web Playback SDK",
+    window.onSpotifyWebPlaybackSDKReady = () => {
+      const player = new window.Spotify.Player({
+        name: "ArcLight Music",
         getOAuthToken: (cb) => {
           cb(token);
         },
         volume: 0.5,
       });
+
       setPlayer(player);
 
       player.addListener("ready", ({ device_id }) => {
+        setDeviceID(device_id);
         console.log("Ready with Device ID", device_id);
       });
 
@@ -49,18 +62,35 @@ function WebPlayback({ token }) {
           return;
         }
 
+        chatSocket.send(
+          JSON.stringify({
+            player: {
+              uri: state.context.metadata.current_item.uri,
+              position: state.position,
+            },
+          })
+        );
+
         setTrack(state.track_window.current_track);
         setPaused(state.paused);
+        state && setActive(true);
 
-        player.getCurrentState().then((state) => {
-          !state ? setActive(false) : setActive(true);
-        });
+        // player.getCurrentState().then((state) => {
+        //   !state ? setActive(false) : setActive(true);
+        // });
       });
 
-      player?.connect();
+      player.connect();
     };
-    return () => player?.disconnect();
+    chatSocket.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      console.log(data);
+      if (data.spotify && !guest.host) {
+        sendSong(token, data.spotify);
+      }
+    };
   }, []);
+
   if (!is_active) {
     return (
       <>
@@ -68,7 +98,14 @@ function WebPlayback({ token }) {
           <h2 className="font-bold">
             Instance not active. Transfer your playback using your Spotify app
           </h2>
-          <a href="#" target="_blank">
+          <button
+            className="rounded-lg p-2 text-lg font-medium bg-blue-600 text-white"
+            onClick={() => transferPlayback(token, deviceID)}
+          >
+            Activate
+          </button>
+          <p>Not working? </p>
+          <a href="/learn-more" target="_blank">
             Learn More
           </a>
         </div>
@@ -78,51 +115,59 @@ function WebPlayback({ token }) {
     return (
       <>
         <div>
-          {current_track && (
+          {currentTrack && (
             <div className="flex flex-col justify-center items-center mt-10 ">
-              <div className="max-w-sm md:max-w-lg  ">
+              <div className="max-w-sm md:max-w-lg">
                 <img
-                  src={current_track?.album.images[0].url}
+                  src={currentTrack?.album.images[0].url}
                   className="now-playing__cover"
                   alt=""
                 />
 
-                <div className="now-playing__side">
-                  <div className="now-playing__name">{current_track?.name}</div>
-
-                  <div className="now-playing__artist">
-                    {current_track?.artists[0].name}
-                  </div>
+                <div>
+                  <div>{currentTrack?.name}</div>
+                  <div>{currentTrack?.artists[0].name}</div>
                 </div>
               </div>
             </div>
           )}
           <div
-            className="border rounded-xl shadow-xl bottom_center_align w-full max-w-md md:max-w-xl lg:max-w-5xl mx-auto -bottom-12 lg:bottom-0  px-10 flex items-center justify-between
+            className="border rounded-xl shadow-xl bottom_center_align w-full max-w-md md:max-w-xl lg:max-w-5xl mx-auto -bottom-12 lg:bottom-5  px-10 flex items-center justify-between
         h-20 bg-gray-800"
           >
             <button
               className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
               onClick={() => {
-                player.previousTrack();
+                onPreviousSong(roomCode, guest_id);
               }}
             >
               <BackwardIcon />
             </button>
 
-            <button
-              className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
-              onClick={() => {
-                player?.togglePlay();
-              }}
-            >
-              {is_paused ? <PlayIcon /> : <PauseIcon />}
-            </button>
+            {is_paused && player ? (
+              <button
+                className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
+                onClick={() => {
+                  onPlay(roomCode, guest_id);
+                }}
+              >
+                <PlayIcon />
+              </button>
+            ) : (
+              <button
+                className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
+                onClick={() => {
+                  onPause(roomCode, guest_id);
+                }}
+              >
+                <PauseIcon />
+              </button>
+            )}
 
             <button
               className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
               onClick={() => {
-                player.nextTrack();
+                onNextSong(roomCode, guest_id);
               }}
             >
               <ForwardIcon />

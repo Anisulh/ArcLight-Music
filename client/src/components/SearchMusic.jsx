@@ -1,7 +1,12 @@
-import React, { useState } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import React, { Fragment, useState } from "react";
 import { fetchSearch } from "../services/spotifyServices";
+import SearchResult from "../components/SearchResult";
 
-function SearchMusic({ setSearchResults, setResultModalOpen }) {
+function SearchMusic() {
+  const [resultModalOpen, setResultModalOpen] = useState(false);
+  const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
+  const [searchResults, setSearchResults] = useState([]);
   const [searchFormData, setSearchData] = useState({
     query: "",
     type: "track",
@@ -28,44 +33,73 @@ function SearchMusic({ setSearchResults, setResultModalOpen }) {
     setSearchData({ query: "", type: "track" });
   };
   return (
-    <div>
-      <form onSubmit={onSearchSubmit}>
-        <label
-          htmlFor="default-search"
-          className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-gray-300"
-        >
-          Search
-        </label>
-        <div className="relative flex mx-10  md:mx-30  lg:mx-40 my-5">
-          <div className=" flex items-center text-sm text-gray-800 bg-gray-50 border-r-0 rounded-l-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500">
-            <select
-              name="type"
-              value={type}
-              onChange={onFormChange}
-              className="h-full rounded-l-lg text-gray-800 bg-gray-50"
-            >
-              <option value="artist">Artist</option>
-              <option value="track">Track</option>
-            </select>
-          </div>
-          <input
-            type="search"
-            id="default-search"
-            className="block p-4 pl-10 w-full text-sm text-gray-800 bg-gray-50 rounded-r-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            placeholder="Search Music, Artists..."
-            required
-            name="query"
-            value={query}
-            onChange={onFormChange}
-          />
-          <button
-            type="submit"
-            className="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-2 md:px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+    <div className="absolute top-0 right-1">
+      <div className="relative">
+        <form onSubmit={onSearchSubmit}>
+          <label
+            htmlFor="default-search"
+            className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-gray-300"
           >
             Search
-          </button>
-        </div>
-      </form>
+          </label>
+          <div className="relative flex text-center my-5">
+            <input
+              type="search"
+              id="default-search"
+              className="block p-4 text-sm text-gray-800 bg-gray-50 rounded-lg shadow-md border-gray-300 dark:border-gray-600 w-96
+            focus:outline-none
+            "
+              placeholder="Search Music"
+              required
+              name="query"
+              value={query}
+              onChange={onFormChange}
+            />
+            <button
+              type="submit"
+              className="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-2 md:px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700"
+            >
+              Search
+            </button>
+          </div>
+        </form>
+        {resultModalOpen && (
+          <Transition.Root show={resultModalOpen} as={Fragment}>
+            <Dialog
+              as="div"
+              id="wrapper"
+              onClose={() => setResultModalOpen(false)}
+            >
+              <div className="flex justify-end items-center max-w-7xl px-2 ">
+                <div className="p-4 text-center  sm:items-center sm:p-0 w-fit">
+                  <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    enterTo="opacity-100 translate-y-0 sm:scale-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                    leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                  >
+                    <Dialog.Panel className=" max-h-52 overflow-y-auto bg-white text-left  shadow-md transition-all max-w-7xl w-fit mt-10">
+                      <div className="bg-white px-4 pb-4  ">
+                        {searchResults.map((result, index) => (
+                          <SearchResult
+                            key={index}
+                            result={result}
+                            setCurrentlyPlaying={setCurrentlyPlaying}
+                            setResultModalOpen={setResultModalOpen}
+                          />
+                        ))}
+                      </div>
+                    </Dialog.Panel>
+                  </Transition.Child>
+                </div>
+              </div>
+            </Dialog>
+          </Transition.Root>
+        )}
+      </div>
     </div>
   );
 }
