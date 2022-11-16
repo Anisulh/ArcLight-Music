@@ -1,10 +1,13 @@
 import React from "react";
+import { sendSong } from "../services/spotifyServices";
 
-function SearchResult({ result, setCurrentlyPlaying, setResultModalOpen }) {
+function SearchResult({ result, setResultModalOpen, guest_id }) {
   const onResultClick = async (result) => {
-    const array = [];
-    array.push(result);
-    setCurrentlyPlaying(array);
+    console.log(result.uri);
+    const uri = result.uri;
+    const position = 0;
+    const songInfo = { uri, position };
+    sendSong(guest_id, songInfo);
     setResultModalOpen(false);
   };
   return (

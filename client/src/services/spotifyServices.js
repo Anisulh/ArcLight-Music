@@ -183,15 +183,22 @@ export const fetchSearch = async (query, type) => {
 };
 
 
-export const sendSong = async (token, songInfo) => {
+export const sendSong = async (guest_id, songInfo) => {
   const { uri, position } = songInfo
+  const requestOptions = {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      guest_id: guest_id,
+      uri: uri,
+      position: position
+    }),
+  };
+  console.log(guest_id, songInfo)
   try {
-    const response = await axios.put("https://api.spotify.com/v1/me/player", { uris: [uri], position_ms: position },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
+    const response = await fetch("http://127.0.0.1:8000/spotify/set-track",
+      requestOptions)
     console.log(response);
   } catch (error) {
     console.log(error)

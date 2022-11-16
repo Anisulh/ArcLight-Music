@@ -7,10 +7,8 @@ from rest_framework import status
 from django.shortcuts import redirect
 
 from backend.models import Room
-from .models import Vote
 
 from .utility import (
-    execute_spotify_api_request,
     check_token_if_valid,
     next_song,
     pause_song,
@@ -237,14 +235,16 @@ def GetSpotifyToken(request, format=None):
 # sends a request to spotify api to play specific song at specific position
 @api_view(["PUT"])
 def setTrack(request, format=None):
-    guest_id = request.session.get("guest_id")
+    guest_id = request.data.get("guest_id")
     uri = request.data.get("uri")
     position = request.data.get("position")
-    if guest_id and uri and position:
+    if guest_id and uri:
+        print("setting track")
         response = set_track(guest_id, uri, position)
         if "error" in response:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-    return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({},status=status.HTTP_204_NO_CONTENT)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 # URL: spotify/transfer
@@ -262,3 +262,23 @@ def transferPlay(request, format=None):
     return Response(
         {"error": "no device or guest id given"}, status=status.HTTP_400_BAD_REQUEST
     )
+
+
+# URL: spotify/play
+# DATA: room_code, guest_id
+# sends a request to spotify api to play music
+@api_view(["PUT"])
+def setSong(request, format=None):
+    room_code = request.data.get("room_code")
+    guest_id = request.data.get("guest_id")
+    if not room_code or guest_id:
+        return Response({"error": "data was not sent to server"})
+    try:
+        room = Room.objects.get(code=room_code)
+    except Room.DoesNotExist:
+        return Response({"error": "room not found"}, status=status.HTTP_404_NOT_FOUND)
+    if guest_id == room.host_id or room.guest_controller:
+        play_song(room.host_id)
+        return Response({}, status=status.HTTP_204_NO_CONTENT)
+
+    return Response({}, status=status.HTTP_403_FORBIDDEN)

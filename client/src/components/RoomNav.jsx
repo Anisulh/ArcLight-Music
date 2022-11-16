@@ -7,12 +7,19 @@ import ChatBubbleBottomCenterIcon from "@heroicons/react/24/outline/ChatBubbleBo
 import React from "react";
 import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
+import ToolTip from "./ToolTip";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-function RoomNav({ setModalOpen, setOpenChat, setSearchActive, searchActive }) {
+function RoomNav({
+  setModalOpen,
+  setOpenChat,
+  setSearchActive,
+  searchActive,
+  deviceID,
+}) {
   const navigate = useNavigate();
   const room = JSON.parse(localStorage.getItem("recent_room"));
   const settings = () => {
@@ -46,24 +53,32 @@ function RoomNav({ setModalOpen, setOpenChat, setSearchActive, searchActive }) {
               {/* Profile dropdown */}
               <Menu as="div" className="relative ml-3">
                 <div className="flex justify-start items-center gap-4">
-                  <button
-                    className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 p-1"
-                    onClick={() => setSearchActive(!searchActive)}
-                  >
-                    <span className="sr-only">Open Chat</span>
-                    <MagnifyingGlassIcon className="text-white h-6 w-6" />
-                  </button>
-                  <button
-                    className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 p-1"
-                    onClick={() => setOpenChat(true)}
-                  >
-                    <span className="sr-only">Open Chat</span>
-                    <ChatBubbleBottomCenterIcon className="text-white h-6 w-6" />
-                  </button>
-                  <Menu.Button className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 -ml-1">
-                    <span className="sr-only">Open user menu</span>
-                    <EllipsisVerticalIcon className="text-white h-6 w-6" />
-                  </Menu.Button>
+                  {deviceID && (
+                    <ToolTip text={"search"}>
+                      <button
+                        className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 p-1"
+                        onClick={() => setSearchActive(!searchActive)}
+                      >
+                        <span className="sr-only">Search Music</span>
+                        <MagnifyingGlassIcon className="text-white h-6 w-6" />
+                      </button>
+                    </ToolTip>
+                  )}
+                  <ToolTip text={"chat"}>
+                    <button
+                      className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 p-1"
+                      onClick={() => setOpenChat(true)}
+                    >
+                      <span className="sr-only">Open Chat</span>
+                      <ChatBubbleBottomCenterIcon className="text-white h-6 w-6" />
+                    </button>
+                  </ToolTip>
+                  <ToolTip text={"more"}>
+                    <Menu.Button className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 -ml-1">
+                      <span className="sr-only">Open user menu</span>
+                      <EllipsisVerticalIcon className="text-white h-6 w-6" />
+                    </Menu.Button>
+                  </ToolTip>
                 </div>
                 <Transition
                   as={Fragment}

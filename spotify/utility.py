@@ -1,3 +1,4 @@
+import json
 from .models import SpotifyToken
 from django.utils import timezone
 from datetime import timedelta
@@ -108,7 +109,6 @@ def execute_spotify_api_request(guest, endpoint, post_=False, put_=False, url=BA
         response = put(url + endpoint, headers=headers)
     else:
         response = get(url + endpoint, {}, headers=headers)
-    print("response:", response)
     try:
         return response.json()
     except:
@@ -141,21 +141,26 @@ def search_function(query, types, limit, guest):
     )
 
 
-def set_track(guest, uri, position):
-    try:
-        tokens = get_user_tokens(guest)
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + tokens.access_token,
-            "body": {"uris": [uri], "position_ms": position},
-        }
+def set_track(guest, uri, position=0):
+    print("setting track")
+    tokens = get_user_tokens(guest)
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + tokens.access_token,
+    }
+    data = {
+        "uris": [uri],
+        "offset": {"position": 0},
+        "position_ms": position,
+    }
 
-        response = put(BASE_URL + "player/play", headers=headers)
-        print("response:", response)
-        return response.json()
-    except:
-        print("error")
-        return {"error": "Issue with request"}
+    response = put(
+        BASE_URL + "player/play",
+        data=json.dumps(data),
+        headers=headers,
+    )
+    print("response:", response)
+    return response.json()
 
 
 def transfer_play(guest, device_id):
@@ -167,7 +172,6 @@ def transfer_play(guest, device_id):
             "Authorization": "Bearer " + tokens.access_token,
             "Body": {"device_ids": [device_id]},
         }
-        print(headers)
 
         response = put(BASE_URL + "player", headers=headers)
         print("response:", response)

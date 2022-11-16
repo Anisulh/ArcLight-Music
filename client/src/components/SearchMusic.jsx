@@ -3,9 +3,8 @@ import React, { Fragment, useState } from "react";
 import { fetchSearch } from "../services/spotifyServices";
 import SearchResult from "../components/SearchResult";
 
-function SearchMusic() {
+function SearchMusic({ token, guest_id }) {
   const [resultModalOpen, setResultModalOpen] = useState(false);
-  const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
   const [searchFormData, setSearchData] = useState({
     query: "",
@@ -33,7 +32,7 @@ function SearchMusic() {
     setSearchData({ query: "", type: "track" });
   };
   return (
-    <div className="absolute top-0 right-1">
+    <div className="absolute top-0 right-1 z-10">
       <div className="relative">
         <form onSubmit={onSearchSubmit}>
           <label
@@ -81,14 +80,15 @@ function SearchMusic() {
                     leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                     leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                   >
-                    <Dialog.Panel className=" max-h-52 overflow-y-auto bg-white text-left  shadow-md transition-all max-w-7xl w-fit mt-10">
+                    <Dialog.Panel className=" absolute right-56 top-52 max-h-52 overflow-y-auto bg-white text-left  shadow-md transition-all max-w-7xl w-fit">
                       <div className="bg-white px-4 pb-4  ">
                         {searchResults.map((result, index) => (
                           <SearchResult
                             key={index}
+                            token={token}
                             result={result}
-                            setCurrentlyPlaying={setCurrentlyPlaying}
                             setResultModalOpen={setResultModalOpen}
+                            guest_id={guest_id}
                           />
                         ))}
                       </div>

@@ -13,6 +13,7 @@ import {
   sendSong,
   transferPlayback,
 } from "../services/spotifyServices";
+import Spinner from "./Spinner";
 
 const track = {
   name: "",
@@ -22,13 +23,13 @@ const track = {
   artists: [{ name: "" }],
 };
 
-function WebPlayback({ token, chatSocket, roomCode, guest_id }) {
+function WebPlayback({ token, chatSocket, roomCode, guest_id, deviceID, setDeviceID }) {
   const guest = JSON.parse(localStorage.getItem("guest"));
-  const [deviceID, setDeviceID] = useState(null);
   const [is_paused, setPaused] = useState(false);
   const [is_active, setActive] = useState(false);
   const [player, setPlayer] = useState(undefined);
   const [currentTrack, setTrack] = useState(track);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -50,6 +51,7 @@ function WebPlayback({ token, chatSocket, roomCode, guest_id }) {
 
       player.addListener("ready", ({ device_id }) => {
         setDeviceID(device_id);
+        setLoading(false)
         console.log("Ready with Device ID", device_id);
       });
 
@@ -74,10 +76,7 @@ function WebPlayback({ token, chatSocket, roomCode, guest_id }) {
         setTrack(state.track_window.current_track);
         setPaused(state.paused);
         state && setActive(true);
-
-        // player.getCurrentState().then((state) => {
-        //   !state ? setActive(false) : setActive(true);
-        // });
+        state && setLoading(false);
       });
 
       player.connect();
@@ -91,10 +90,14 @@ function WebPlayback({ token, chatSocket, roomCode, guest_id }) {
     };
   }, []);
 
-  if (!is_active) {
+  if(loading){
+    return <Spinner/>
+  }
+
+  if (!is_active && !loading) {
     return (
       <>
-        <div className=" grid place-items-center">
+        <div className=" flex flex-col justify-center items-center h-screen -mt-20 gap-2">
           <h2 className="font-bold">
             Instance not active. Transfer your playback using your Spotify app
           </h2>
@@ -105,7 +108,7 @@ function WebPlayback({ token, chatSocket, roomCode, guest_id }) {
             Activate
           </button>
           <p>Not working? </p>
-          <a href="/learn-more" target="_blank">
+          <a href="/learn-more" target="_blank" className="-mt-3">
             Learn More
           </a>
         </div>
