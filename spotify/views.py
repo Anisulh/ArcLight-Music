@@ -56,15 +56,15 @@ def IsAuthenticated(request, format=None):
             request.session["guest_id"] = guest_id
             print("session created")
 
-        is_authenticated = check_token_if_valid(guest_id)
+        token = check_token_if_valid(guest_id, respond=True)
 
-        if not is_authenticated:
+        if not token:
             print("user not authenticated")
             print("redirecting to /spotify/auth-url")
             return redirect("auth_url")
         else:
             print("user authenticated, sending status")
-            return Response({"status": is_authenticated}, status=status.HTTP_200_OK)
+            return Response({"token": token}, status=status.HTTP_200_OK)
 
 
 # URL: spotify/auth-url
@@ -136,15 +136,19 @@ def spotify_callback(request, format=None):
 @api_view(["PUT"])
 def PauseSong(request, format=None):
     room_code = request.data.get("room_code")
-    guest_id = request.data.get("guest_id")
-    if not room_code or guest_id:
-        return Response({"error": "data was not sent to server"})
+    guest_id = request.session.get("guest_id")
+    websocket_controlled = request.data.get("websocket_controlled")
+
+    if not room_code or not guest_id:
+        return Response(
+            {"error": "data was not sent to server"}, status=status.HTTP_404_NOT_FOUND
+        )
     try:
         room = Room.objects.get(code=room_code)
     except Room.DoesNotExist:
         return Response({"error": "room not found"}, status=status.HTTP_404_NOT_FOUND)
-    if guest_id == room.host_id or room.guest_controller:
-        pause_song(room.host_id)
+    if guest_id == room.host_id or room.guest_controller or websocket_controlled:
+        pause_song(guest_id)
         return Response({}, status=status.HTTP_204_NO_CONTENT)
 
     return Response({}, status=status.HTTP_403_FORBIDDEN)
@@ -157,14 +161,17 @@ def PauseSong(request, format=None):
 def resumeSong(request, format=None):
     room_code = request.data.get("room_code")
     guest_id = request.data.get("guest_id")
-    if not room_code or guest_id:
-        return Response({"error": "data was not sent to server"})
+    websocket_controlled = request.data.get("websocket_controlled")
+    if not room_code or not guest_id:
+        return Response(
+            {"error": "data was not sent to server"}, status=status.HTTP_404_NOT_FOUND
+        )
     try:
         room = Room.objects.get(code=room_code)
     except Room.DoesNotExist:
         return Response({"error": "room not found"}, status=status.HTTP_404_NOT_FOUND)
-    if guest_id == room.host_id or room.guest_controller:
-        play_song(room.host_id)
+    if guest_id == room.host_id or room.guest_controller or websocket_controlled:
+        play_song(guest_id)
         return Response({}, status=status.HTTP_204_NO_CONTENT)
 
     return Response({}, status=status.HTTP_403_FORBIDDEN)
@@ -177,14 +184,16 @@ def resumeSong(request, format=None):
 def NextSong(request, format=None):
     room_code = request.data.get("room_code")
     guest_id = request.data.get("guest_id")
-    if not room_code or guest_id:
-        return Response({"error": "data was not sent to server"})
+    if not room_code or not guest_id:
+        return Response(
+            {"error": "data was not sent to server"}, status=status.HTTP_404_NOT_FOUND
+        )
     try:
         room = Room.objects.get(code=room_code)
     except Room.DoesNotExist:
         return Response({"error": "room not found"}, status=status.HTTP_404_NOT_FOUND)
     if guest_id == room.host_id or room.guest_controller:
-        next_song(room.host_id)
+        next_song(guest_id)
         return Response({}, status.HTTP_204_NO_CONTENT)
     return Response({}, status.HTTP_403_FORBIDDEN)
 
@@ -196,14 +205,16 @@ def NextSong(request, format=None):
 def PrevSong(request, format=None):
     room_code = request.data.get("room_code")
     guest_id = request.data.get("guest_id")
-    if not room_code or guest_id:
-        return Response({"error": "data was not sent to server"})
+    if not room_code or not guest_id:
+        return Response(
+            {"error": "data was not sent to server"}, status=status.HTTP_404_NOT_FOUND
+        )
     try:
         room = Room.objects.get(code=room_code)
     except Room.DoesNotExist:
         return Response({"error": "room not found"}, status=status.HTTP_404_NOT_FOUND)
     if guest_id == room.host_id or room.guest_controller:
-        prev_song(room.host_id)
+        prev_song(guest_id)
         return Response({}, status.HTTP_204_NO_CONTENT)
     return Response({}, status.HTTP_403_FORBIDDEN)
 
@@ -223,13 +234,6 @@ def Search(request, format=None):
     return Response({"error: bad request"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["GET"])
-def GetSpotifyToken(request, format=None):
-    guest_id = request.session.get("guest_id")
-    access_token = check_token_if_valid(guest_id, respond=True)
-    return Response({"access_token": access_token})
-
-
 # URL: spotify/set-track
 # DATA: guest_id, uri, position
 # sends a request to spotify api to play specific song at specific position
@@ -243,7 +247,7 @@ def setTrack(request, format=None):
         response = set_track(guest_id, uri, position)
         if "error" in response:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        return Response({},status=status.HTTP_204_NO_CONTENT)
+        return Response({}, status=status.HTTP_204_NO_CONTENT)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 

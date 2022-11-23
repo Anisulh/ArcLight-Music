@@ -23,12 +23,22 @@ const track = {
   artists: [{ name: "" }],
 };
 
-function WebPlayback({ token, chatSocket, roomCode, guest_id, deviceID, setDeviceID }) {
+function WebPlayback({
+  token,
+  chatSocket,
+  roomCode,
+  guest_id,
+  deviceID,
+  setDeviceID,
+  setMessages,
+}) {
   const guest = JSON.parse(localStorage.getItem("guest"));
   const [is_paused, setPaused] = useState(false);
   const [is_active, setActive] = useState(false);
   const [player, setPlayer] = useState(undefined);
   const [currentTrack, setTrack] = useState(track);
+  const [currentPosition, setPosition] = useState(null);
+  const [currentUri, setCurrentUri] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,7 +51,7 @@ function WebPlayback({ token, chatSocket, roomCode, guest_id, deviceID, setDevic
     window.onSpotifyWebPlaybackSDKReady = () => {
       const player = new window.Spotify.Player({
         name: "ArcLight Music",
-        getOAuthToken: (cb) => {
+        getOAuthToken: async (cb) => {
           cb(token);
         },
         volume: 0.5,
@@ -51,7 +61,7 @@ function WebPlayback({ token, chatSocket, roomCode, guest_id, deviceID, setDevic
 
       player.addListener("ready", ({ device_id }) => {
         setDeviceID(device_id);
-        setLoading(false)
+        setLoading(false);
         console.log("Ready with Device ID", device_id);
       });
 
@@ -63,16 +73,8 @@ function WebPlayback({ token, chatSocket, roomCode, guest_id, deviceID, setDevic
         if (!state) {
           return;
         }
-
-        chatSocket.send(
-          JSON.stringify({
-            player: {
-              uri: state.context.metadata.current_item.uri,
-              position: state.position,
-            },
-          })
-        );
-
+        setPosition(state.position);
+        setCurrentUri(state.context.metadata.current_item?.uri);
         setTrack(state.track_window.current_track);
         setPaused(state.paused);
         state && setActive(true);
@@ -82,16 +84,49 @@ function WebPlayback({ token, chatSocket, roomCode, guest_id, deviceID, setDevic
       player.connect();
     };
     chatSocket.onmessage = (e) => {
-      const data = JSON.parse(e.data);
       console.log(data);
+      if (data.message) {
+        setMessages((prevState) => [...prevState, data.message]);
+      }
+      if (data.connection) {
+        setMessages((prevState) => [...prevState, data.connection]);
+      }
       if (data.spotify && !guest.host) {
-        sendSong(token, data.spotify);
+        const websocket_controlled = true;
+
+        if (data.spotify._type === "play/pause" && data.spotify.paused) {
+          onPause(roomCode, guest_id, websocket_controlled);
+        } else if (
+          data.spotify._type === "play/pause" &&
+          !data.spotify.paused
+        ) {
+          onPlay(roomCode, guest_id, websocket_controlled);
+        } else if (data.spotify.uri && data.spotify.uri !== currentUri) {
+          const songInfo = {
+            uri: data.spotify.uri,
+            position: data.spotify.position,
+          };
+          sendSong(guest_id, songInfo, websocket_controlled);
+        }
       }
     };
   }, []);
 
-  if(loading){
-    return <Spinner/>
+  useEffect(() => {
+    chatSocket.send(
+      JSON.stringify({
+        player: {
+          _type: "track_change",
+          paused: false,
+          uri: currentUri,
+          position: 0,
+        },
+      })
+    );
+  }, [currentTrack.uri]);
+
+  if (loading) {
+    return <Spinner />;
   }
 
   if (!is_active && !loading) {
@@ -119,29 +154,31 @@ function WebPlayback({ token, chatSocket, roomCode, guest_id, deviceID, setDevic
       <>
         <div>
           {currentTrack && (
-            <div className="flex flex-col justify-center items-center mt-10 ">
-              <div className="max-w-sm md:max-w-lg">
-                <img
-                  src={currentTrack?.album.images[0].url}
-                  className="now-playing__cover"
-                  alt=""
-                />
+            <div className="absolute left-0 right-0 bottom-0 top-0 m-auto w-fit h-fit">
+              <img
+                src={currentTrack?.album.images[0].url}
+                className="md:w-96 rounded-lg "
+                alt="album image"
+              />
 
-                <div>
-                  <div>{currentTrack?.name}</div>
-                  <div>{currentTrack?.artists[0].name}</div>
-                </div>
+              <div>
+                <div className="text-lg">{currentTrack?.name}</div>
+                <div className="text-sm">{currentTrack?.artists[0].name}</div>
               </div>
             </div>
           )}
           <div
             className="border rounded-xl shadow-xl bottom_center_align w-full max-w-md md:max-w-xl lg:max-w-5xl mx-auto -bottom-12 lg:bottom-5  px-10 flex items-center justify-between
-        h-20 bg-gray-800"
+        h-20 bg-gray-800 mb-10 md:mb-0"
           >
             <button
+              disabled={!guest.host && true}
               className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
               onClick={() => {
                 onPreviousSong(roomCode, guest_id);
+
+                //
+                //
               }}
             >
               <BackwardIcon />
@@ -149,18 +186,40 @@ function WebPlayback({ token, chatSocket, roomCode, guest_id, deviceID, setDevic
 
             {is_paused && player ? (
               <button
+                disabled={!guest.host && true}
                 className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
                 onClick={() => {
                   onPlay(roomCode, guest_id);
+                  chatSocket.send(
+                    JSON.stringify({
+                      player: {
+                        _type: "play/pause",
+                        paused: false,
+                        uri: currentUri,
+                        position: currentPosition,
+                      },
+                    })
+                  );
                 }}
               >
                 <PlayIcon />
               </button>
             ) : (
               <button
+                disabled={!guest.host && true}
                 className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
                 onClick={() => {
                   onPause(roomCode, guest_id);
+                  chatSocket.send(
+                    JSON.stringify({
+                      player: {
+                        _type: "play/pause",
+                        paused: true,
+                        uri: currentUri,
+                        position: currentPosition,
+                      },
+                    })
+                  );
                 }}
               >
                 <PauseIcon />
@@ -168,6 +227,7 @@ function WebPlayback({ token, chatSocket, roomCode, guest_id, deviceID, setDevic
             )}
 
             <button
+              disabled={!guest.host && true}
               className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
               onClick={() => {
                 onNextSong(roomCode, guest_id);

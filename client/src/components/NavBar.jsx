@@ -44,7 +44,10 @@ export default function NavBar() {
                 </Disclosure.Button>
               </div>
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                <div className="flex flex-shrink-0 items-center cursor-pointer" onClick={() => navigate("/")}>
+                <div
+                  className="flex flex-shrink-0 items-center cursor-pointer"
+                  onClick={() => navigate("/")}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -77,8 +80,6 @@ export default function NavBar() {
                         key={item.name}
                         onClick={() => {
                           onNavClick();
-                          console.log(item.name);
-
                           item.name === "Home"
                             ? navigate("/")
                             : navigate(
@@ -122,9 +123,7 @@ export default function NavBar() {
                         {({ active }) => (
                           <button
                             onClick={() => {
-                              
-                                setNicknameOpen(true);
-                              
+                              setNicknameOpen(true);
                             }}
                             className={classNames(
                               active ? "bg-gray-100" : "",

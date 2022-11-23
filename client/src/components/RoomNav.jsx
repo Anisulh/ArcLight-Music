@@ -8,6 +8,7 @@ import React from "react";
 import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import ToolTip from "./ToolTip";
+import { leaveRoom } from "../services/roomService";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");

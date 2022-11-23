@@ -2,24 +2,23 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchRoomInfo } from "../services/roomService";
 import RoomInfo from "../components/RoomInfo";
-import {
-  authenticateSpotify,
-  getSpotifyToken,
-} from "../services/spotifyServices";
+import { authenticateSpotify } from "../services/spotifyServices";
 import RoomNav from "../components/RoomNav";
 import SearchMusic from "../components/SearchMusic";
 import Chat from "../components/Chat";
-import { ClipboardDocumentIcon } from "@heroicons/react/24/outline";
+import ClipboardDocumentIcon from "@heroicons/react/24/outline/ClipboardDocumentIcon";
 import WebPlayback from "../components/WebPlayback";
 import ToolTip from "../components/ToolTip";
 
 function Room() {
   const { roomCode } = useParams();
   const guest = JSON.parse(localStorage.getItem("guest"));
+  const [token, setToken] = useState(null);
   const [roomInfo, setRoomInfo] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [openChat, setOpenChat] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
+  const [messages, setMessages] = useState([]);
   const [copied, setCopied] = useState(false);
   const [deviceID, setDeviceID] = useState(null);
   const [chatSocket, setChatSocket] = useState(
@@ -27,20 +26,8 @@ function Room() {
   );
 
   useEffect(() => {
-    const fetchRoom = async () => {
-      const data = fetchRoomInfo(roomCode);
-      setRoomInfo(data);
-    };
-    const fetchToken = async () => {
-      authenticateSpotify(setRoomInfo, guest.guest_id);
-      const token = await getSpotifyToken();
-      setRoomInfo((prevState) => ({
-        ...prevState,
-        access_token: token.access_token,
-      }));
-    };
-    fetchRoom();
-    fetchToken();
+    fetchRoomInfo(roomCode, setRoomInfo);
+    authenticateSpotify(setRoomInfo, guest.guest_id, setToken);
   }, []);
 
   useEffect(() => {
@@ -68,13 +55,11 @@ function Room() {
         openChat={openChat}
         setOpenChat={setOpenChat}
         chatSocket={chatSocket}
+        messages={messages}
       />
-      <div className="flex justify-end items-center max-w-7xl px-2 sm:px-6 lg:px-8 relative">
+      <div className="flex justify-end items-center max-w-7xl px-2 sm:px-6 lg:px-8 relative ">
         {searchActive && (
-          <SearchMusic
-            token={roomInfo?.access_token}
-            guest_id={guest.guest_id}
-          />
+          <SearchMusic guest_id={guest.guest_id} chatSocket={chatSocket} />
         )}
       </div>
       <div className="mx-auto max-w-7xl flex ">
@@ -108,14 +93,15 @@ function Room() {
         </div>
       </div>
       <div>
-        {roomInfo?.access_token && (
+        {roomInfo?.spotifyAuthenticated && (
           <WebPlayback
-            token={roomInfo?.access_token}
             chatSocket={chatSocket}
             roomCode={roomCode}
-            id={guest.guest_id}
+            guest_id={guest.guest_id}
             deviceID={deviceID}
             setDeviceID={setDeviceID}
+            token={token}
+            setMessages={setMessages}
           />
         )}
       </div>

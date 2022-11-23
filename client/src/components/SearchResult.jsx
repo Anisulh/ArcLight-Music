@@ -1,12 +1,21 @@
 import React from "react";
 import { sendSong } from "../services/spotifyServices";
 
-function SearchResult({ result, setResultModalOpen, guest_id }) {
+function SearchResult({ result, setResultModalOpen, guest_id, chatSocket }) {
   const onResultClick = async (result) => {
-    console.log(result.uri);
     const uri = result.uri;
     const position = 0;
     const songInfo = { uri, position };
+    chatSocket.send(
+      JSON.stringify({
+        player: {
+          _type: "track_change",
+          uri: uri,
+          paused: false,
+          position: position,
+        },
+      })
+    );
     sendSong(guest_id, songInfo);
     setResultModalOpen(false);
   };

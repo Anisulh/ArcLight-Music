@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const onPause = (roomCode, guest_id) => {
+export const onPause = (roomCode, guest_id, websocket_controlled = false) => {
   const requestOptions = {
     method: "PUT",
     credentials: "include",
@@ -10,11 +10,12 @@ export const onPause = (roomCode, guest_id) => {
     body: JSON.stringify({
       room_code: roomCode,
       guest_id: guest_id,
+      websocket_controlled: websocket_controlled
     }),
   };
   fetch("http://127.0.0.1:8000/spotify/pause", requestOptions);
 };
-export const onPlay = (roomCode, guest_id) => {
+export const onPlay = (roomCode, guest_id, websocket_controlled = false) => {
   const requestOptions = {
     method: "PUT",
     credentials: "include",
@@ -24,6 +25,7 @@ export const onPlay = (roomCode, guest_id) => {
     body: JSON.stringify({
       room_code: roomCode,
       guest_id: guest_id,
+      websocket_controlled: websocket_controlled
     }),
   };
   fetch("http://127.0.0.1:8000/spotify/play", requestOptions);
@@ -45,23 +47,26 @@ export const onNextSong = (roomCode, guest_id) => {
 };
 
 export const onPreviousSong = (roomCode, guest_id) => {
-  const requestOptions = {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      room_code: roomCode,
-      guest_id: guest_id,
-    }),
-  };
-  fetch("http://127.0.0.1:8000/spotify/prev", requestOptions);
+  try {
+    const requestOptions = {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        room_code: roomCode,
+        guest_id: guest_id,
+      }),
+    };
+    fetch("http://127.0.0.1:8000/spotify/prev", requestOptions);
+  } catch (error) {
+    console.log(error)
+  }
+
 };
 
-//! notworking
 export const fetchCurrentPlaying = async (room_code) => {
-  console.log(room_code)
   const requestOptions = {
     method: "POST",
     credentials: "include",
@@ -88,7 +93,7 @@ export const fetchCurrentPlaying = async (room_code) => {
   }
 };
 
-export const authenticateSpotify = async (setRoomInfo, guest_id) => {
+export const authenticateSpotify = async (setRoomInfo, guest_id, setToken) => {
   const requestOptions = {
     method: "POST",
     credentials: "include",
@@ -113,6 +118,7 @@ export const authenticateSpotify = async (setRoomInfo, guest_id) => {
         ...prevState,
         spotifyAuthenticated: true,
       }));
+      setToken(data.token)
     } else if (data.response) {
       console.log(response);
     }
@@ -142,22 +148,6 @@ export const fetchRedirect = async () => {
   }
 };
 
-export const getSpotifyToken = async () => {
-  const requestOptions = {
-    method: "GET",
-    credentials: "include",
-  };
-  try {
-    const response = await fetch(
-      "http://127.0.0.1:8000/spotify/get-token",
-      requestOptions
-    );
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.log(error);
-  }
-};
 
 export const fetchSearch = async (query, type) => {
   const room = JSON.parse(localStorage.getItem("recent_room"));
@@ -183,7 +173,7 @@ export const fetchSearch = async (query, type) => {
 };
 
 
-export const sendSong = async (guest_id, songInfo) => {
+export const sendSong = async (guest_id, songInfo, websocket_controlled = false) => {
   const { uri, position } = songInfo
   const requestOptions = {
     method: "PUT",
@@ -192,23 +182,22 @@ export const sendSong = async (guest_id, songInfo) => {
     body: JSON.stringify({
       guest_id: guest_id,
       uri: uri,
-      position: position
+      position: position,
+      websocket_controlled: websocket_controlled
     }),
   };
-  console.log(guest_id, songInfo)
   try {
-    const response = await fetch("http://127.0.0.1:8000/spotify/set-track",
+    await fetch("http://127.0.0.1:8000/spotify/set-track",
       requestOptions)
-    console.log(response);
   } catch (error) {
     console.log(error)
   }
 }
 
 export const transferPlayback = async (token, device_id) => {
+
   try {
-    await axios.put(
-      "https://api.spotify.com/v1/me/player", { device_ids: [device_id], play: true },
+    await axios.put("https://api.spotify.com/v1/me/player", { device_ids: [device_id], play: true },
       {
         headers: {
           Authorization: `Bearer ${token}`

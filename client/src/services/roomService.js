@@ -30,7 +30,7 @@ export const saveNickName = async (nickname) => {
   }
 };
 
-export const fetchRoomInfo = async (roomCode) => {
+export const fetchRoomInfo = async (roomCode, setRoomInfo) => {
   try {
     const requestOptions = {
       method: "GET",
@@ -40,7 +40,8 @@ export const fetchRoomInfo = async (roomCode) => {
       requestOptions
     );
     const data = await response.json();
-    return data;
+    setRoomInfo((prevState) => ({ ...prevState, ...data }));
+    return;
   } catch (error) {
     console.log(error);
   }
@@ -57,7 +58,6 @@ export const createRoom = async (name, votesToSkip, guestController, guestData, 
       guest_controller: guestController,
     }),
   };
-  console.log(requestOptions)
   try {
     const response = await fetch(
       "http://127.0.0.1:8000/api/room",
@@ -123,7 +123,6 @@ export const leaveRoom = async () => {
   const room = JSON.parse(localStorage.getItem("recent_room"));
   const { code } = room;
   const { guest_id } = guest;
-  console.log(guest_id)
   const requestOptions = {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
@@ -141,10 +140,8 @@ export const leaveRoom = async () => {
     if (response.ok) {
       guest.host = false;
       delete guest.room
-      console.log("setting guest in local storage")
       localStorage.setItem("guest", JSON.stringify(guest));
       localStorage.removeItem("recent_room");
-      console.log("returning true")
       return true;
     } else {
       console.log("unable to leave");

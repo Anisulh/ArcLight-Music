@@ -9,9 +9,8 @@ function JoinRoomForm() {
   const onFormSubmission = async (e) => {
     e.preventDefault();
     const response = await joinRoom(code);
-    console.log(response);
+
     if (response.code) {
-      console.log(response);
       let temp;
 
       //check if the user's host_id for last room is the session id for the joining room; if it is then they were the host
@@ -22,7 +21,6 @@ function JoinRoomForm() {
       } else {
         temp = { ...response, host: false };
       }
-      console.log(temp);
       if (localStorage.getItem("recent_room")) {
         localStorage.removeItem("recent_room");
       }

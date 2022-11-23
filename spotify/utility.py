@@ -102,18 +102,21 @@ def execute_spotify_api_request(guest, endpoint, post_=False, put_=False, url=BA
         "Content-Type": "application/json",
         "Authorization": "Bearer " + tokens.access_token,
     }
+    print(tokens.access_token)
     if post_:
         response = post(url + endpoint, headers=headers)
     elif put_:
         print("putting")
         response = put(url + endpoint, headers=headers)
+        print(response)
+
     else:
         response = get(url + endpoint, {}, headers=headers)
     try:
         return response.json()
     except:
         print("error")
-        return {"Error": "Issue with request"}
+        return {"error": "Issue with request"}
 
 
 def play_song(user):
@@ -170,10 +173,10 @@ def transfer_play(guest, device_id):
         headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + tokens.access_token,
-            "Body": {"device_ids": [device_id]},
         }
+        data = {"device_ids": [device_id]}
 
-        response = put(BASE_URL + "player", headers=headers)
+        response = put(BASE_URL + "player", data=json.dumps(data), headers=headers)
         print("response:", response)
         return response.json()
     except:

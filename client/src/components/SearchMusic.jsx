@@ -3,7 +3,7 @@ import React, { Fragment, useState } from "react";
 import { fetchSearch } from "../services/spotifyServices";
 import SearchResult from "../components/SearchResult";
 
-function SearchMusic({ token, guest_id }) {
+function SearchMusic({ guest_id, chatSocket }) {
   const [resultModalOpen, setResultModalOpen] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [searchFormData, setSearchData] = useState({
@@ -85,10 +85,10 @@ function SearchMusic({ token, guest_id }) {
                         {searchResults.map((result, index) => (
                           <SearchResult
                             key={index}
-                            token={token}
                             result={result}
                             setResultModalOpen={setResultModalOpen}
                             guest_id={guest_id}
+                            chatSocket={chatSocket}
                           />
                         ))}
                       </div>

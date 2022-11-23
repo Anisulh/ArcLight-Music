@@ -12,7 +12,6 @@ urlpatterns = [
     path("next", views.NextSong),
     path("prev", views.PrevSong),
     path("search", views.Search),
-    path("get-token", views.GetSpotifyToken),
     path("set-track", views.setTrack),
     path("transfer", views.transferPlay),
 ]
