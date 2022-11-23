@@ -16,12 +16,7 @@ function Chat({ openChat, setOpenChat, chatSocket, messages }) {
   };
   const onFormSubmit = (e) => {
     e.preventDefault();
-    chatSocket.send(
-      JSON.stringify({
-        guest_id: guest.guest_id,
-        message,
-      })
-    );
+
     setFormData({ message: "" });
   };
 

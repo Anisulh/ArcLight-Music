@@ -1,9 +1,4 @@
-import React from "react";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
-import { useNavigate } from "react-router-dom";
-
 function TransferPlayback() {
-  const navigate = useNavigate();
   return (
     <div>
       <div className="max-w-7xl m-auto p-2 sm:px-6 lg:px-8 mt-10">

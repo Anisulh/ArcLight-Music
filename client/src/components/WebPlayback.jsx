@@ -6,11 +6,15 @@ import {
 } from "@heroicons/react/24/outline";
 import React, { useEffect, useState } from "react";
 import {
+  onChatMessage,
+  sendSocketPlayPause,
+  sendSocketTrackChange,
+} from "../services/chatService";
+import {
   onNextSong,
   onPause,
   onPlay,
   onPreviousSong,
-  sendSong,
   transferPlayback,
 } from "../services/spotifyServices";
 import Spinner from "./Spinner";
@@ -83,46 +87,11 @@ function WebPlayback({
 
       player.connect();
     };
-    chatSocket.onmessage = (e) => {
-      console.log(data);
-      if (data.message) {
-        setMessages((prevState) => [...prevState, data.message]);
-      }
-      if (data.connection) {
-        setMessages((prevState) => [...prevState, data.connection]);
-      }
-      if (data.spotify && !guest.host) {
-        const websocket_controlled = true;
-
-        if (data.spotify._type === "play/pause" && data.spotify.paused) {
-          onPause(roomCode, guest_id, websocket_controlled);
-        } else if (
-          data.spotify._type === "play/pause" &&
-          !data.spotify.paused
-        ) {
-          onPlay(roomCode, guest_id, websocket_controlled);
-        } else if (data.spotify.uri && data.spotify.uri !== currentUri) {
-          const songInfo = {
-            uri: data.spotify.uri,
-            position: data.spotify.position,
-          };
-          sendSong(guest_id, songInfo, websocket_controlled);
-        }
-      }
-    };
+    onChatMessage(chatSocket, setMessages, roomCode, guest_id);
   }, []);
 
   useEffect(() => {
-    chatSocket.send(
-      JSON.stringify({
-        player: {
-          _type: "track_change",
-          paused: false,
-          uri: currentUri,
-          position: 0,
-        },
-      })
-    );
+    sendSocketTrackChange(chatSocket, false, currentUri);
   }, [currentTrack.uri]);
 
   if (loading) {
@@ -176,9 +145,6 @@ function WebPlayback({
               className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
               onClick={() => {
                 onPreviousSong(roomCode, guest_id);
-
-                //
-                //
               }}
             >
               <BackwardIcon />
@@ -190,15 +156,11 @@ function WebPlayback({
                 className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
                 onClick={() => {
                   onPlay(roomCode, guest_id);
-                  chatSocket.send(
-                    JSON.stringify({
-                      player: {
-                        _type: "play/pause",
-                        paused: false,
-                        uri: currentUri,
-                        position: currentPosition,
-                      },
-                    })
+                  sendSocketPlayPause(
+                    chatSocket,
+                    false,
+                    currentUri,
+                    currentPosition
                   );
                 }}
               >
@@ -210,15 +172,11 @@ function WebPlayback({
                 className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
                 onClick={() => {
                   onPause(roomCode, guest_id);
-                  chatSocket.send(
-                    JSON.stringify({
-                      player: {
-                        _type: "play/pause",
-                        paused: true,
-                        uri: currentUri,
-                        position: currentPosition,
-                      },
-                    })
+                  sendSocketPlayPause(
+                    chatSocket,
+                    true,
+                    currentUri,
+                    currentPosition
                   );
                 }}
               >

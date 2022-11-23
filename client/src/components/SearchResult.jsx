@@ -1,4 +1,5 @@
 import React from "react";
+import { sendSocketTrackChange } from "../services/chatService";
 import { sendSong } from "../services/spotifyServices";
 
 function SearchResult({ result, setResultModalOpen, guest_id, chatSocket }) {
@@ -6,16 +7,7 @@ function SearchResult({ result, setResultModalOpen, guest_id, chatSocket }) {
     const uri = result.uri;
     const position = 0;
     const songInfo = { uri, position };
-    chatSocket.send(
-      JSON.stringify({
-        player: {
-          _type: "track_change",
-          uri: uri,
-          paused: false,
-          position: position,
-        },
-      })
-    );
+    sendSocketTrackChange(chatSocket, false, uri);
     sendSong(guest_id, songInfo);
     setResultModalOpen(false);
   };
