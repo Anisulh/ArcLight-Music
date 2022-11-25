@@ -1,8 +1,9 @@
 import { Fragment, useRef, useState } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
-import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import NickNameModal from "./NickNameModal";
+import {SiAzurefunctions} from "react-icons/si"
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -14,7 +15,7 @@ export default function NavBar() {
   const cancelButtonRef = useRef(null);
   const [navigation, setNavigation] = useState([
     { name: "Home", current: true },
-    { name: "About", current: false },
+    { name: "Features", current: false },
   ]);
   const guest = JSON.parse(localStorage.getItem("guest"));
   const onNavClick = () => {
@@ -48,30 +49,9 @@ export default function NavBar() {
                   className="flex flex-shrink-0 items-center cursor-pointer"
                   onClick={() => navigate("/")}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="block h-8 w-auto lg:hidden text-cyan-300"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M19.952 1.651a.75.75 0 01.298.599V16.303a3 3 0 01-2.176 2.884l-1.32.377a2.553 2.553 0 11-1.403-4.909l2.311-.66a1.5 1.5 0 001.088-1.442V6.994l-9 2.572v9.737a3 3 0 01-2.176 2.884l-1.32.377a2.553 2.553 0 11-1.402-4.909l2.31-.66a1.5 1.5 0 001.088-1.442V9.017 5.25a.75.75 0 01.544-.721l10.5-3a.75.75 0 01.658.122z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="hidden h-8 w-auto lg:block text-cyan-300"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M19.952 1.651a.75.75 0 01.298.599V16.303a3 3 0 01-2.176 2.884l-1.32.377a2.553 2.553 0 11-1.403-4.909l2.311-.66a1.5 1.5 0 001.088-1.442V6.994l-9 2.572v9.737a3 3 0 01-2.176 2.884l-1.32.377a2.553 2.553 0 11-1.402-4.909l2.31-.66a1.5 1.5 0 001.088-1.442V9.017 5.25a.75.75 0 01.544-.721l10.5-3a.75.75 0 01.658.122z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <SiAzurefunctions className="block h-8 w-auto lg:hidden text-blue-400"/>
+                  <SiAzurefunctions className="hidden h-8 w-auto lg:block text-blue-400"/>
+                  
                 </div>
                 <div className="hidden sm:ml-6 sm:block">
                   <div className="flex space-x-4">

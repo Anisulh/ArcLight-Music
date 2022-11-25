@@ -9,6 +9,7 @@ import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import ToolTip from "./ToolTip";
 import { leaveRoom } from "../services/roomService";
+import SearchMusic from "./SearchMusic";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -20,6 +21,8 @@ function RoomNav({
   setSearchActive,
   searchActive,
   deviceID,
+  chatSocket,
+  guest
 }) {
   const navigate = useNavigate();
   const room = JSON.parse(localStorage.getItem("recent_room"));
@@ -36,13 +39,9 @@ function RoomNav({
       <>
         <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
           <div className="relative flex h-16 items-center justify-between">
-            <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-              <div className="flex flex-shrink-0 items-center">
-                <h2 className="block lg:hidden text-lg text-white w-auto">
-                  You're in: {room.name}
-                </h2>
-
-                <h2 className="hidden lg:block text-lg text-white w-auto">
+            <div className="flex flex-1  items-stretch justify-start">
+              <div className="">
+                <h2 className="block text-lg text-white">
                   You're in: {room.name}
                 </h2>
               </div>
@@ -50,14 +49,14 @@ function RoomNav({
                 <div className="flex space-x-4"></div>
               </div>
             </div>
-            <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+            <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0 ">
               {/* Profile dropdown */}
               <Menu as="div" className="relative ml-3">
                 <div className="flex justify-start items-center gap-4">
                   {deviceID && (
                     <ToolTip text={"search"}>
                       <button
-                        className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 p-1"
+                        className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 p-1 z-20"
                         onClick={() => setSearchActive(!searchActive)}
                       >
                         <span className="sr-only">Search Music</span>
@@ -67,7 +66,7 @@ function RoomNav({
                   )}
                   <ToolTip text={"chat"}>
                     <button
-                      className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 p-1"
+                      className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 p-1 z-20"
                       onClick={() => setOpenChat(true)}
                     >
                       <span className="sr-only">Open Chat</span>
@@ -75,7 +74,7 @@ function RoomNav({
                     </button>
                   </ToolTip>
                   <ToolTip text={"more"}>
-                    <Menu.Button className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 -ml-1">
+                    <Menu.Button className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 -ml-1 z-20">
                       <span className="sr-only">Open user menu</span>
                       <EllipsisVerticalIcon className="text-white h-6 w-6" />
                     </Menu.Button>
@@ -120,6 +119,14 @@ function RoomNav({
                   </Menu.Items>
                 </Transition>
               </Menu>
+              <div className="flex justify-end items-center max-w-7xl px-2 sm:px-6 lg:px-8 relative ">
+                {searchActive && (
+                  <SearchMusic
+                    guest_id={guest.guest_id}
+                    chatSocket={chatSocket}
+                  />
+                )}
+              </div>
             </div>
           </div>
         </div>

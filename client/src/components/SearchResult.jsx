@@ -4,11 +4,17 @@ import { sendSong } from "../services/spotifyServices";
 
 function SearchResult({ result, setResultModalOpen, guest_id, chatSocket }) {
   const onResultClick = async (result) => {
+    const guest = JSON.parse(localStorage.getItem("guest"));
+    const room = localStorage.getItem("room");
     const uri = result.uri;
     const position = 0;
     const songInfo = { uri, position };
-    sendSocketTrackChange(chatSocket, false, uri);
-    sendSong(guest_id, songInfo);
+    if (guest.host || room.guestController) {
+      sendSocketTrackChange(chatSocket, false, uri);
+      sendSong(guest_id, songInfo);
+    } else {
+      console.log("You do not have permisson to change the track");
+    }
     setResultModalOpen(false);
   };
   return (

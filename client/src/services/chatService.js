@@ -1,7 +1,10 @@
 import { onPause, onPlay, sendSong } from "./spotifyServices";
 
-export const onChatMessage = (chatSocket, setMessages, roomCode, guest_id) => {
-  chatSocket.onmessage = () => {
+export const onChatMessage = (chatSocket, setMessages, roomCode, guest_id)=> {
+  chatSocket.onmessage = (e) => {
+    console.log(e.data)
+    const data = JSON.parse(e.data);
+    const guest = JSON.parse(localStorage.getItem("guest"))
     if (data.message) {
       setMessages((prevState) => [...prevState, data.message]);
     }

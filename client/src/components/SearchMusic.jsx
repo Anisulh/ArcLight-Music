@@ -32,7 +32,7 @@ function SearchMusic({ guest_id, chatSocket }) {
     setSearchData({ query: "", type: "track" });
   };
   return (
-    <div className="absolute top-0 right-1 z-10">
+    <div className="fixed top-36 sm:top-30 md:right-36 z-10 xl:right-auto">
       <div className="relative">
         <form onSubmit={onSearchSubmit}>
           <label
@@ -62,14 +62,15 @@ function SearchMusic({ guest_id, chatSocket }) {
             </button>
           </div>
         </form>
-        {resultModalOpen && (
+        <div className="relative">
+          {resultModalOpen && (
           <Transition.Root show={resultModalOpen} as={Fragment}>
             <Dialog
               as="div"
               id="wrapper"
               onClose={() => setResultModalOpen(false)}
             >
-              <div className="flex justify-end items-center max-w-7xl px-2 ">
+              <div className="fixed">
                 <div className="p-4 text-center  sm:items-center sm:p-0 w-fit">
                   <Transition.Child
                     as={Fragment}
@@ -80,7 +81,7 @@ function SearchMusic({ guest_id, chatSocket }) {
                     leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                     leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                   >
-                    <Dialog.Panel className=" absolute right-56 top-52 max-h-52 overflow-y-auto bg-white text-left  shadow-md transition-all max-w-7xl w-fit">
+                    <Dialog.Panel className="max-h-52 overflow-y-auto bg-white text-left  shadow-md  transition-all max-w-3xl w-fit">
                       <div className="bg-white px-4 pb-4  ">
                         {searchResults.map((result, index) => (
                           <SearchResult
@@ -99,6 +100,8 @@ function SearchMusic({ guest_id, chatSocket }) {
             </Dialog>
           </Transition.Root>
         )}
+        </div>
+        
       </div>
     </div>
   );

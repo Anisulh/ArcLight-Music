@@ -49,6 +49,8 @@ function Room() {
         setSearchActive={setSearchActive}
         searchActive={searchActive}
         deviceID={deviceID}
+        guest={guest}
+        chatSocket={chatSocket}
       />
       <RoomInfo modalOpen={modalOpen} setModalOpen={setModalOpen} />
       <Chat
@@ -57,11 +59,7 @@ function Room() {
         chatSocket={chatSocket}
         messages={messages}
       />
-      <div className="flex justify-end items-center max-w-7xl px-2 sm:px-6 lg:px-8 relative ">
-        {searchActive && (
-          <SearchMusic guest_id={guest.guest_id} chatSocket={chatSocket} />
-        )}
-      </div>
+      
       <div className="mx-auto max-w-7xl flex ">
         <div className="relative p-2 sm:px-6 lg:px-8 flex">
           <h2 className="block lg:hidden text-lg  w-auto">

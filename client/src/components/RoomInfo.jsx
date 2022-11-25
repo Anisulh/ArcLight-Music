@@ -9,7 +9,7 @@ function RoomInfo({ modalOpen, setModalOpen }) {
   const { roomCode } = useParams();
   let roomInfo = JSON.parse(localStorage.getItem("recent_room"));
   const [roomSettings, setRoomSettings] = useState({ ...roomInfo });
-  const { name, host_id, guest_controller, votes_to_skip } = roomSettings;
+  const { name, host_id, guest_controller } = roomSettings;
 
   const [edit, setEdit] = useState(false);
   const cancelButtonRef = useRef(null);
@@ -31,7 +31,6 @@ function RoomInfo({ modalOpen, setModalOpen }) {
     const response = await saveRoomInfo(
       host_id,
       name,
-      votes_to_skip,
       guest_controller
     );
     const data = await response.json();
@@ -135,28 +134,9 @@ function RoomInfo({ modalOpen, setModalOpen }) {
                           ) : (
                             "Disabled"
                           )}
-
-                          {/* {} */}
                         </dd>
                       </div>
-                      <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt className="text-sm font-medium text-gray-500">
-                          Votes Needed To Skip:
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                          {edit ? (
-                            <input
-                              type="number"
-                              name="votes_to_skip"
-                              value={votes_to_skip}
-                              required
-                              onChange={onFormChange}
-                            />
-                          ) : (
-                            roomInfo && roomInfo.votes_to_skip
-                          )}
-                        </dd>
-                      </div>
+                      
                     </dl>
                   </div>
                   {edit ? (

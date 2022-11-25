@@ -35,8 +35,6 @@ class Room(models.Model):
     name = models.CharField(null=False, max_length=50)
     host_id = models.CharField(max_length=50, unique=True)
     guest_controller = models.BooleanField(null=False, default=False)
-    votes_to_skip = models.IntegerField(null=False, default=1)
-    currently_playing = models.CharField(null=True, max_length=50)
     guest = models.ManyToManyField(Guest, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

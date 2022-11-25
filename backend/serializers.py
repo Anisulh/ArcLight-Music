@@ -10,7 +10,7 @@ class RoomSerializer(serializers.ModelSerializer):
 class CreateRoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
-        fields = ["guest_id", "votes_to_skip", "guest_controller"]
+        fields = ["guest_id", "guest_controller"]
 
 class GuestSerializer(serializers.ModelSerializer):
     class Meta:

@@ -15,7 +15,7 @@ def RoomView(request, format=None):
         serializer = RoomSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     # create a room
-    # DATA: name, host_id, guest_controller, votes_to_skip
+    # DATA: name, host_id, guest_controller
     if request.method == "POST":
         serializer = RoomSerializer(data=request.data)
         print(serializer)
@@ -55,7 +55,7 @@ def SpecificRoomView(request, room_code, format=None):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         serializer = RoomSerializer(instance=query, data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save(update_fields=["name", "guest_controller", "votes_to_skip"])
+            serializer.save(update_fields=["name", "guest_controller"])
             return Response(RoomSerializer(query).data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

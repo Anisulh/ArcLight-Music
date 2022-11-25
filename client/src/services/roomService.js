@@ -47,14 +47,13 @@ export const fetchRoomInfo = async (roomCode, setRoomInfo) => {
   }
 };
 
-export const createRoom = async (name, votesToSkip, guestController, guestData, setError) => {
+export const createRoom = async (name, guestController, guestData, setError) => {
   const requestOptions = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       host_id: guestData.guest_id,
       name: name,
-      votes_to_skip: votesToSkip,
       guest_controller: guestController,
     }),
   };
@@ -92,7 +91,6 @@ export const joinRoom = async (code) => {
 export const saveRoomInfo = async (
   host_id,
   name,
-  votes_to_skip,
   guest_controller
 ) => {
   const guest = JSON.parse(localStorage.getItem("guest"));
@@ -103,7 +101,6 @@ export const saveRoomInfo = async (
       guest_id: guest.guest_id,
       host_id,
       name,
-      votes_to_skip,
       guest_controller,
     }),
   };

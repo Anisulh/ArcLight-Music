@@ -8,10 +8,9 @@ function CreateRoomForm() {
   const [formData, setFormData] = useState({
     name: "",
     guestController: false,
-    votesToSkip: 2,
   });
   const [error, setError] = useState(null);
-  const { name, votesToSkip, guestController } = formData;
+  const { name, guestController } = formData;
 
   const onFormChange = (e) => {
     let boolean = null;
@@ -31,7 +30,6 @@ function CreateRoomForm() {
     const guestData = JSON.parse(localStorage.getItem("guest"));
     const data = await createRoom(
       name,
-      votesToSkip,
       guestController,
       guestData,
       setError
@@ -88,27 +86,8 @@ function CreateRoomForm() {
               <label htmlFor="false"> False</label>
             </div>
           </div>
-          <p className="mt-3 font-medium">Votes needed to skip song:</p>
-          <input
-            className="w-full
-        px-3
-        py-1.5
-        font-normal
-        text-gray-700
-        bg-white bg-clip-padding
-        border border-solid border-gray-300
-        rounded
-        transition
-        ease-in-out
-        m-0
-        focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
-            type="number"
-            value={votesToSkip}
-            name="votesToSkip"
-            required
-            onChange={onFormChange}
-          />
-          <div className="flex items-center justify-center my-2 mt-3 ">
+          
+          <div className="flex items-center justify-center my-2 mt-10 ">
             <button
               className="px-6
       py-3
