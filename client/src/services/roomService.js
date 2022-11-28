@@ -81,7 +81,7 @@ export const saveRoomInfo = async (host_id, name, guest_controller, roomCode, se
   }
 };
 
-export const leaveRoom = async () => {
+export const leaveRoom = async (setError) => {
   const guest = JSON.parse(localStorage.getItem("guest"));
   const room = JSON.parse(localStorage.getItem("recent_room"));
   const { code } = room;
@@ -107,7 +107,7 @@ export const leaveRoom = async () => {
       localStorage.removeItem("recent_room");
       return true;
     } else {
-      console.log("unable to leave");
+      setError("Unable to leave room.");
       return false;
     }
   } catch (error) {

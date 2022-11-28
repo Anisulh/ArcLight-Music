@@ -26,7 +26,7 @@ export const saveNickName = async (nickname, setError) => {
     return response;
   } catch (error) {
     console.log(error);
-    setError("Something went wrong. Unable to set Nickname.")
+    setError("Unable to set Nickname.")
   }
 };
 
@@ -46,7 +46,7 @@ export const leaveSession = async () => {
     return response;
   } catch (error) {
     console.log(error);
-    setError("Something went wrong, unable to leave room.");
+    setError("Unable to leave room.");
     setTimeout(() => setError(null), 5000)
   }
 }

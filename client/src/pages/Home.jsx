@@ -3,17 +3,17 @@ import { BsSpotify, BsPlayFill } from "react-icons/bs";
 import { FaRegHandshake } from "react-icons/fa";
 import { VscWorkspaceUnknown } from "react-icons/vsc";
 import { MdDashboardCustomize } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
 import NickNameModal from "../components/NickNameModal";
 import ActiveRoomModal from "../components/ActiveRoomModal";
 import Picture from "../assets/landingPicture.png";
 import PictureMobile from "../assets/landingMobile.png";
+import DisclaimerModal from "../components/DisclaimerModal";
 
 function Home({ homeRef, featureRef }) {
-  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [room, setRoom] = useState(false);
   const [nicknameOpen, setNicknameOpen] = useState(false);
+  const [disclaimerOpen, setDisclaimerOpen] = useState(false);
   const cancelButtonRef = useRef(null);
 
   useEffect(() => {
@@ -45,13 +45,7 @@ function Home({ homeRef, featureRef }) {
           <div className=" flex items-center w-fit my-3">
             <button
               className="flex justify-evenly items-center text-white bg-blue-400 hover:bg-blue-500 hover:text-white px-3 py-2 mr-5 rounded-md text-sm font-medium"
-              onClick={() => {
-                if (!localStorage.getItem("guest")) {
-                  setNicknameOpen(true);
-                } else {
-                  navigate("/room");
-                }
-              }}
+              onClick={() => setDisclaimerOpen(true)}
             >
               Get Started
               <svg
@@ -171,6 +165,7 @@ function Home({ homeRef, featureRef }) {
           cancelButtonRef={cancelButtonRef}
           nicknameOpen={nicknameOpen}
         />
+        <DisclaimerModal setNicknameOpen={setNicknameOpen} disclaimerOpen={disclaimerOpen} setDisclaimerOpen={setDisclaimerOpen}/>
       </div>
     </div>
   );
