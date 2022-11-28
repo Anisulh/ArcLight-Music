@@ -1,21 +1,26 @@
 import { Fragment, useRef, useState } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import NickNameModal from "./NickNameModal";
-import {SiAzurefunctions} from "react-icons/si"
+import { SiAzurefunctions } from "react-icons/si";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function NavBar() {
+export default function NavBar({ homeRef, featureRef }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [nicknameOpen, setNicknameOpen] = useState(false);
   const cancelButtonRef = useRef(null);
   const [navigation, setNavigation] = useState([
-    { name: "Home", current: true },
-    { name: "Features", current: false },
+    {
+      name: "Home",
+      current: location.pathname !== "/" ? false : true,
+      ref: homeRef,
+    },
+    { name: "Features", current: false, ref: featureRef },
   ]);
   const guest = JSON.parse(localStorage.getItem("guest"));
   const onNavClick = () => {
@@ -49,9 +54,8 @@ export default function NavBar() {
                   className="flex flex-shrink-0 items-center cursor-pointer"
                   onClick={() => navigate("/")}
                 >
-                  <SiAzurefunctions className="block h-8 w-auto lg:hidden text-blue-400"/>
-                  <SiAzurefunctions className="hidden h-8 w-auto lg:block text-blue-400"/>
-                  
+                  <SiAzurefunctions className="block h-8 w-auto lg:hidden text-blue-400" />
+                  <SiAzurefunctions className="hidden h-8 w-auto lg:block text-blue-400" />
                 </div>
                 <div className="hidden sm:ml-6 sm:block">
                   <div className="flex space-x-4">
@@ -59,12 +63,12 @@ export default function NavBar() {
                       <button
                         key={item.name}
                         onClick={() => {
-                          onNavClick();
-                          item.name === "Home"
+                          location.pathname !== "/"
                             ? navigate("/")
-                            : navigate(
-                                `/${item.name.split(" ").join().toLowerCase()}`
-                              );
+                            : item.ref.current?.scrollIntoView();
+
+                          console.log(item.ref.current);
+                          onNavClick();
                         }}
                         className={classNames(
                           item.current
@@ -82,7 +86,7 @@ export default function NavBar() {
               </div>
               <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                 {/* Profile dropdown */}
-                <Menu as="div" className="relative ml-3">
+                <Menu as="div" className="relative ml-3 z-20">
                   <div>
                     <Menu.Button className="flex rounded-full bg-gray-300 text-lg focus:outline-none hover:bg-gray-500 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 px-2">
                       <span className="sr-only">Open user menu</span>
@@ -106,8 +110,8 @@ export default function NavBar() {
                               setNicknameOpen(true);
                             }}
                             className={classNames(
-                              active ? "bg-gray-100" : "",
-                              "block px-4 py-2 text-sm text-gray-700"
+                              active ? "bg-gray-100 " : "",
+                              "block px-4 py-2 text-sm text-gray-700 w-full text-left "
                             )}
                           >
                             Change Nickname
@@ -120,7 +124,7 @@ export default function NavBar() {
                             href="#"
                             className={classNames(
                               active ? "bg-gray-100" : "",
-                              "block px-4 py-2 text-sm text-gray-700"
+                              "block px-4 py-2 text-sm text-gray-700 w-full text-left"
                             )}
                           >
                             Leave Session

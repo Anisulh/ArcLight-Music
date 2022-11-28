@@ -6,13 +6,16 @@ import { MdDashboardCustomize } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import NickNameModal from "../components/NickNameModal";
 import ActiveRoomModal from "../components/ActiveRoomModal";
+import Picture from "../assets/landingPicture.png";
+import PictureMobile from "../assets/landingMobile.png";
 
-function Home() {
+function Home({ homeRef, featureRef }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [room, setRoom] = useState(false);
   const [nicknameOpen, setNicknameOpen] = useState(false);
   const cancelButtonRef = useRef(null);
+
   useEffect(() => {
     if (localStorage.getItem("recent_room")) {
       setOpen(true);
@@ -22,9 +25,13 @@ function Home() {
 
   return (
     <div>
-      <div className="px-4 py-16 sm:px-8 lg:px-10 bg-gray-800 ">
+      <div
+        ref={homeRef}
+        id="Home"
+        className="px-4 py-16 sm:px-8 lg:px-10 bg-gray-800 "
+      >
         <div className="md:mx-20 xl:mx-80 max-w-3xl">
-          <h1 className="text-slate-300 font-medium text-xl py-3">
+          <h1 className="text-slate-300 font-medium text-xl py-2">
             ArcLight Music
           </h1>
           <h2 className="text-white font-bold text-5xl">Share music </h2>
@@ -65,8 +72,26 @@ function Home() {
           </div>
         </div>
       </div>
-      <div className="py-16 px-4 sm:px-8 lg:px-10">
-        <div className="md:mx-20 xl:mx-80">
+      <div className="landingPicture p-4 sm:p-10">
+        <img
+          src={Picture}
+          alt="Preview"
+          width="1000"
+          className=" hidden sm:block shadow-lg mx-auto rounded-lg "
+        />
+        <img
+          src={PictureMobile}
+          alt="Preview"
+          width="500"
+          className=" sm:hidden block shadow-lg mx-auto rounded-lg "
+        />
+      </div>
+      <div
+        ref={featureRef}
+        id="Features"
+        className="py-16 px-4 sm:px-8 lg:px-10"
+      >
+        <div className="md:mx-20 xl:mx-80 py-20">
           <h2 className="text-2xl font-semibold ">Listening Made Easier</h2>
           <p className="text-gray-600">
             ArcLight Music strives to provide our users with the best possible
@@ -136,11 +161,11 @@ function Home() {
 
       <div>
         <ActiveRoomModal
-        open={open}
-        setOpen={setOpen}
-        room={room}
-        cancelButtonRef={cancelButtonRef}
-      />
+          open={open}
+          setOpen={setOpen}
+          room={room}
+          cancelButtonRef={cancelButtonRef}
+        />
         <NickNameModal
           setNicknameOpen={setNicknameOpen}
           cancelButtonRef={cancelButtonRef}

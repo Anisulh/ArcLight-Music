@@ -1,8 +1,6 @@
 import { Disclosure, Menu, Transition } from "@headlessui/react";
-import {
-  EllipsisVerticalIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/24/outline";
+import MagnifyingGlassIcon from "@heroicons/react/24/outline/MagnifyingGlassIcon";
+import EllipsisVerticalIcon from "@heroicons/react/24/outline/EllipsisVerticalIcon";
 import ChatBubbleBottomCenterIcon from "@heroicons/react/24/outline/ChatBubbleBottomCenterIcon";
 import React from "react";
 import { Fragment } from "react";
@@ -22,7 +20,7 @@ function RoomNav({
   searchActive,
   deviceID,
   chatSocket,
-  guest
+  guest,
 }) {
   const navigate = useNavigate();
   const room = JSON.parse(localStorage.getItem("recent_room"));
@@ -38,7 +36,7 @@ function RoomNav({
     <Disclosure as="nav" className="bg-gray-800">
       <>
         <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-          <div className="relative flex h-16 items-center justify-between">
+          <div className="relative flex h-16 items-center justify-between ">
             <div className="flex flex-1  items-stretch justify-start">
               <div className="">
                 <h2 className="block text-lg text-white">
@@ -49,14 +47,14 @@ function RoomNav({
                 <div className="flex space-x-4"></div>
               </div>
             </div>
-            <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0 ">
+            <div className=" inset-y-0 right-0 static sm:inset-auto sm:ml-6 pr-0 ">
               {/* Profile dropdown */}
               <Menu as="div" className="relative ml-3">
                 <div className="flex justify-start items-center gap-4">
                   {deviceID && (
                     <ToolTip text={"search"}>
                       <button
-                        className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 p-1 z-20"
+                        className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 p-1 z-10"
                         onClick={() => setSearchActive(!searchActive)}
                       >
                         <span className="sr-only">Search Music</span>
@@ -66,7 +64,7 @@ function RoomNav({
                   )}
                   <ToolTip text={"chat"}>
                     <button
-                      className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 p-1 z-20"
+                      className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 p-1 z-10"
                       onClick={() => setOpenChat(true)}
                     >
                       <span className="sr-only">Open Chat</span>
@@ -74,7 +72,7 @@ function RoomNav({
                     </button>
                   </ToolTip>
                   <ToolTip text={"more"}>
-                    <Menu.Button className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 -ml-1 z-20">
+                    <Menu.Button className="flex rounded-full bg-gray-800 text-sm hover:bg-gray-400 -ml-1 z-10">
                       <span className="sr-only">Open user menu</span>
                       <EllipsisVerticalIcon className="text-white h-6 w-6" />
                     </Menu.Button>
@@ -96,7 +94,7 @@ function RoomNav({
                           onClick={settings}
                           className={classNames(
                             active ? "bg-gray-100" : "",
-                            "block px-4 py-2 text-sm text-gray-700"
+                            "block px-4 py-2 text-sm text-gray-700 w-full text-left"
                           )}
                         >
                           Settings
@@ -109,7 +107,7 @@ function RoomNav({
                           onClick={onLeaveClick}
                           className={classNames(
                             active ? "bg-gray-100" : "",
-                            "block px-4 py-2 text-sm text-gray-700"
+                            "block px-4 py-2 text-sm text-gray-700 w-full text-left"
                           )}
                         >
                           Leave Room

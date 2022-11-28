@@ -22,7 +22,7 @@ function Chat({ openChat, setOpenChat, chatSocket, messages }) {
 
   return (
     <Transition.Root show={openChat} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={setOpenChat}>
+      <Dialog as="div" className="relative z-40" onClose={setOpenChat}>
         <Transition.Child
           as={Fragment}
           enter="ease-in-out duration-500"

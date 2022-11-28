@@ -28,11 +28,7 @@ function RoomInfo({ modalOpen, setModalOpen }) {
   };
   const onFormSubmission = async (e) => {
     e.preventDefault();
-    const response = await saveRoomInfo(
-      host_id,
-      name,
-      guest_controller
-    );
+    const response = await saveRoomInfo(host_id, name, guest_controller);
     const data = await response.json();
     console.log(data);
     if (response.ok) {
@@ -136,7 +132,6 @@ function RoomInfo({ modalOpen, setModalOpen }) {
                           )}
                         </dd>
                       </div>
-                      
                     </dl>
                   </div>
                   {edit ? (
