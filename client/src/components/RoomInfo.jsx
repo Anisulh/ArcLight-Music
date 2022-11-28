@@ -4,15 +4,21 @@ import { Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { useParams } from "react-router-dom";
 import { saveRoomInfo } from "../services/roomService";
+import Error from "./Error";
 
 function RoomInfo({ modalOpen, setModalOpen }) {
   const { roomCode } = useParams();
-  let roomInfo = JSON.parse(localStorage.getItem("recent_room"));
+  const roomInfo = JSON.parse(localStorage.getItem("recent_room"));
+  const guest = JSON.parse(localStorage.getItem("guest"));
   const [roomSettings, setRoomSettings] = useState({ ...roomInfo });
   const { name, host_id, guest_controller } = roomSettings;
 
   const [edit, setEdit] = useState(false);
+  const [error, setError] = useState(
+    !guest.host && edit ? "You are not authorized to update settings" : null
+  );
   const cancelButtonRef = useRef(null);
+
   const onFormChange = (e) => {
     let boolean = null;
     if (e.target.value === "true") {
@@ -28,7 +34,13 @@ function RoomInfo({ modalOpen, setModalOpen }) {
   };
   const onFormSubmission = async (e) => {
     e.preventDefault();
-    const response = await saveRoomInfo(host_id, name, guest_controller);
+    const response = await saveRoomInfo(
+      host_id,
+      name,
+      guest_controller,
+      roomCode,
+      setError
+    );
     const data = await response.json();
     console.log(data);
     if (response.ok) {
@@ -36,6 +48,10 @@ function RoomInfo({ modalOpen, setModalOpen }) {
       roomInfo = JSON.parse(localStorage.getItem("recent_room"));
       setRoomSettings({ ...roomInfo });
       setEdit(false);
+      setModalOpen(false);
+    } else {
+      setError("Unable to update room settings.");
+      setTimeout(() => setError(null), 5000);
     }
   };
 
@@ -74,11 +90,12 @@ function RoomInfo({ modalOpen, setModalOpen }) {
               <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
                 <div className="px-4 py-5 sm:px-6 bg-gray-800 rounded-md">
                   <h3 className="text-lg font-medium leading-6 text-white">
-                    You're in:
+                    You're in:{" "}
                     {edit ? (
                       <input
                         type="text"
                         name="name"
+                        className="rounded-md text-black font-normal pl-2"
                         value={name}
                         required
                         onChange={onFormChange}
@@ -114,6 +131,7 @@ function RoomInfo({ modalOpen, setModalOpen }) {
                                 type="radio"
                                 name="guest_controller"
                                 value={true}
+                                defaultChecked={guest_controller ? true : false}
                                 onChange={onFormChange}
                               />
                               <label htmlFor="true"> True </label>
@@ -134,6 +152,7 @@ function RoomInfo({ modalOpen, setModalOpen }) {
                       </div>
                     </dl>
                   </div>
+                  {error && <Error message={error} />}
                   {edit ? (
                     <>
                       <div className="flex items-center justify-center my-2 mt-3 ">
@@ -184,7 +203,7 @@ function RoomInfo({ modalOpen, setModalOpen }) {
                         </button>
                       </div>
                     </>
-                  ) : (
+                  ) : guest.host ? (
                     <div className="flex items-center justify-center my-5 ">
                       <button
                         type="button"
@@ -209,7 +228,7 @@ function RoomInfo({ modalOpen, setModalOpen }) {
                         Edit
                       </button>
                     </div>
-                  )}
+                  ) : null}
                 </form>
               </Dialog.Panel>
             </Transition.Child>

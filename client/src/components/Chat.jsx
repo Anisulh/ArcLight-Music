@@ -1,7 +1,8 @@
 import { Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import XMarkIcon from "@heroicons/react/24/outline/XMarkIcon";
 import { useState } from "react";
+import { sendSocketMessage } from "../services/chatService";
 
 function Chat({ openChat, setOpenChat, chatSocket, messages }) {
   const guest = JSON.parse(localStorage.getItem("guest"));
@@ -16,7 +17,7 @@ function Chat({ openChat, setOpenChat, chatSocket, messages }) {
   };
   const onFormSubmit = (e) => {
     e.preventDefault();
-
+    sendSocketMessage(chatSocket, guest.guest_id, message);
     setFormData({ message: "" });
   };
 

@@ -1,34 +1,3 @@
-export const saveNickName = async (nickname) => {
-  const guest = JSON.parse(localStorage.getItem("guest"));
-  //if guest doesn't exist then send POST request to create a new guest; if guest already exists then update the nickname
-  const requestOptions = guest
-    ? {
-      method: "PATCH",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        guest_id: guest.guest_id,
-        nickname: nickname,
-      }),
-    }
-    : {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        nickname: nickname,
-      }),
-    };
-  try {
-    const response = await fetch(
-      "http://127.0.0.1:8000/api/guest",
-      requestOptions
-    );
-    return response;
-  } catch (error) {
-    console.log(error);
-  }
-};
 
 export const fetchRoomInfo = async (roomCode, setRoomInfo) => {
   try {
@@ -88,11 +57,7 @@ export const joinRoom = async (code) => {
   }
 };
 
-export const saveRoomInfo = async (
-  host_id,
-  name,
-  guest_controller
-) => {
+export const saveRoomInfo = async (host_id, name, guest_controller, roomCode, setError) => {
   const guest = JSON.parse(localStorage.getItem("guest"));
   const requestOptions = {
     method: "PATCH",
@@ -112,6 +77,7 @@ export const saveRoomInfo = async (
     return response;
   } catch (error) {
     console.log(error);
+    setError("Unable to update room settings.")
   }
 };
 

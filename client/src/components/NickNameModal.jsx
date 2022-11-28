@@ -1,25 +1,27 @@
 import { useState } from "react";
 import React, { Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
-import { saveNickName } from "../services/roomService";
 import Error from "./Error";
+import { saveNickName } from "../services/guestService";
 
 function NickNameModal({ nicknameOpen, cancelButtonRef, setNicknameOpen }) {
   const navigate = useNavigate();
   const [nickname, setNickname] = useState("");
-  const [error,setError]= useState(null);
+  const [error, setError] = useState(null);
   const onFormSubmit = async (e) => {
     e.preventDefault();
     if (!nickname) {
       return setError("No nickname provided");
     }
-    const response = await saveNickName(nickname);
+    const response = await saveNickName(nickname, setError);
     const data = await response.json();
     if (response.ok) {
       localStorage.setItem("guest", JSON.stringify(data));
       navigate("/room");
+      setNicknameOpen(false);
+    } else {
+      setError("Something went wrong. Unable to set Nickname.");
     }
   };
   return (

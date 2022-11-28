@@ -1,9 +1,12 @@
 import { Fragment, useRef, useState } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import Bars3Icon from "@heroicons/react/24/outline/Bars3Icon";
+import XMarkIcon from "@heroicons/react/24/outline/XMarkIcon";
 import { useLocation, useNavigate } from "react-router-dom";
 import NickNameModal from "./NickNameModal";
 import { SiAzurefunctions } from "react-icons/si";
+import { leaveSession } from "../services/guestService";
+import Error from "./Error";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -12,15 +15,15 @@ function classNames(...classes) {
 export default function NavBar({ homeRef, featureRef }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [error, setError] = useState(null);
   const [nicknameOpen, setNicknameOpen] = useState(false);
   const cancelButtonRef = useRef(null);
   const [navigation, setNavigation] = useState([
     {
       name: "Home",
-      current: location.pathname !== "/" ? false : true,
       ref: homeRef,
     },
-    { name: "Features", current: false, ref: featureRef },
+    { name: "Features", ref: featureRef },
   ]);
   const guest = JSON.parse(localStorage.getItem("guest"));
   const onNavClick = () => {
@@ -31,11 +34,25 @@ export default function NavBar({ homeRef, featureRef }) {
     });
     setNavigation(updatedArr);
   };
-
+  const onLeave = async () => {
+    const response = await leaveSession(setError);
+    console.log(response);
+    if (response.ok) {
+      localStorage.removeItem("guest");
+      localStorage.removeItem("recent_room");
+      navigate("/");
+    } else {
+      setError("Something went wrong, unable to leave room.");
+    }
+  };
+  if (error) {
+    setTimeout(() => setError(null), 5000);
+  }
   return (
     <Disclosure as="nav" className="bg-gray-800">
       {({ open }) => (
         <>
+          {error && <Error message={error} />}
           <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
             <div className="relative flex h-16 items-center justify-between">
               <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
@@ -70,13 +87,7 @@ export default function NavBar({ homeRef, featureRef }) {
                           console.log(item.ref.current);
                           onNavClick();
                         }}
-                        className={classNames(
-                          item.current
-                            ? "bg-gray-900 text-white"
-                            : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                          "px-3 py-2 rounded-md text-sm font-medium"
-                        )}
-                        aria-current={item.current ? "page" : undefined}
+                        className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                       >
                         {item.name}
                       </button>
@@ -88,7 +99,7 @@ export default function NavBar({ homeRef, featureRef }) {
                 {/* Profile dropdown */}
                 <Menu as="div" className="relative ml-3 z-20">
                   <div>
-                    <Menu.Button className="flex rounded-full bg-gray-300 text-lg focus:outline-none hover:bg-gray-500 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 px-2">
+                    <Menu.Button className="flex rounded-full bg-gray-300 text-lg focus:outline-none hover:bg-gray-500 px-2">
                       <span className="sr-only">Open user menu</span>
                       {guest && guest.nickname ? guest.nickname[0] : null}
                     </Menu.Button>
@@ -120,15 +131,15 @@ export default function NavBar({ homeRef, featureRef }) {
                       </Menu.Item>
                       <Menu.Item>
                         {({ active }) => (
-                          <a
-                            href="#"
+                          <button
+                            onClick={onLeave}
                             className={classNames(
                               active ? "bg-gray-100" : "",
                               "block px-4 py-2 text-sm text-gray-700 w-full text-left"
                             )}
                           >
                             Leave Session
-                          </a>
+                          </button>
                         )}
                       </Menu.Item>
                     </Menu.Items>
@@ -143,15 +154,16 @@ export default function NavBar({ homeRef, featureRef }) {
               {navigation.map((item) => (
                 <Disclosure.Button
                   key={item.name}
-                  as="a"
-                  href={item.href}
-                  className={classNames(
-                    item.current
-                      ? "bg-gray-900 text-white"
-                      : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                    "block px-3 py-2 rounded-md text-base font-medium"
-                  )}
-                  aria-current={item.current ? "page" : undefined}
+                  as="button"
+                  className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+                  onClick={() => {
+                    location.pathname !== "/"
+                      ? navigate("/")
+                      : item.ref.current?.scrollIntoView();
+
+                    console.log(item.ref.current);
+                    onNavClick();
+                  }}
                 >
                   {item.name}
                 </Disclosure.Button>

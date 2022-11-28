@@ -158,7 +158,7 @@ export const fetchSearch = async (query, type) => {
     body: JSON.stringify({
       host_id: room.host_id,
       query: query,
-      type: type,
+      type: type
     }),
   };
   try {

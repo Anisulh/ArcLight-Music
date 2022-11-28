@@ -4,7 +4,6 @@ import { fetchRoomInfo } from "../services/roomService";
 import RoomInfo from "../components/RoomInfo";
 import { authenticateSpotify } from "../services/spotifyServices";
 import RoomNav from "../components/RoomNav";
-import SearchMusic from "../components/SearchMusic";
 import Chat from "../components/Chat";
 import ClipboardDocumentIcon from "@heroicons/react/24/outline/ClipboardDocumentIcon";
 import WebPlayback from "../components/WebPlayback";
@@ -31,7 +30,7 @@ function Room() {
   }, []);
 
   useEffect(() => {
-    chatSocket.onopen = (e) => {
+    chatSocket.onopen = () => {
       chatSocket.send(
         JSON.stringify({
           connection: { guest_id: guest.guest_id },
@@ -59,7 +58,7 @@ function Room() {
         chatSocket={chatSocket}
         messages={messages}
       />
-      
+
       <div className="mx-auto max-w-7xl flex ">
         <div className="relative p-2 sm:px-6 lg:px-8 flex">
           <h2 className="block lg:hidden text-lg  w-auto">
