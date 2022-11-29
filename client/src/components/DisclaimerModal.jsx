@@ -82,6 +82,7 @@ function DisclaimerModal({
                     onClick={() => {
                       if (!localStorage.getItem("guest")) {
                         setNicknameOpen(true);
+                        setDisclaimerOpen(false);
                       } else {
                         navigate("/room");
                       }

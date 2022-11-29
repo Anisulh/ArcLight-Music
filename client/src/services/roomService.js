@@ -48,7 +48,7 @@ export const joinRoom = async (code) => {
   };
   try {
     const response = await fetch(
-      `http://127.0.0.1:8000/api/join-room/${code}`,
+      `http://127.0.0.1:8000/api/room/${code}`,
       requestOptions
     );
     return response.json();
@@ -95,7 +95,7 @@ export const leaveRoom = async (setError) => {
   };
   try {
     const response = await fetch(
-      `http://127.0.0.1:8000/api/leave-room/${code}`,
+      `http://127.0.0.1:8000/api/room/${code}`,
       requestOptions
     );
 
@@ -104,6 +104,9 @@ export const leaveRoom = async (setError) => {
       guest.host = false;
       delete guest.room
       localStorage.setItem("guest", JSON.stringify(guest));
+      localStorage.removeItem("recent_room");
+      return true;
+    } else if (guest.host === false) {
       localStorage.removeItem("recent_room");
       return true;
     } else {

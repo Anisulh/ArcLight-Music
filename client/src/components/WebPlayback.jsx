@@ -1,9 +1,7 @@
-import {
-  BackwardIcon,
-  ForwardIcon,
-  PauseIcon,
-  PlayIcon,
-} from "@heroicons/react/24/outline";
+import BackwardIcon from "@heroicons/react/24/outline/BackwardIcon";
+import ForwardIcon from "@heroicons/react/24/outline/ForwardIcon";
+import PauseIcon from "@heroicons/react/24/outline/PauseIcon";
+import PlayIcon from "@heroicons/react/24/outline/PlayIcon";
 import React, { useEffect, useState } from "react";
 import {
   onChatMessage,
@@ -37,6 +35,7 @@ function WebPlayback({
   setMessages,
 }) {
   const guest = JSON.parse(localStorage.getItem("guest"));
+  const room = JSON.parse(localStorage.getItem("recent_room"));
   const [is_paused, setPaused] = useState(false);
   const [is_active, setActive] = useState(false);
   const [player, setPlayer] = useState(undefined);
@@ -87,7 +86,7 @@ function WebPlayback({
 
       player.connect();
     };
-    onChatMessage(chatSocket, setMessages, roomCode, guest_id);
+    onChatMessage(chatSocket, setMessages, roomCode, guest_id, currentUri);
   }, []);
 
   useEffect(() => {
@@ -101,7 +100,7 @@ function WebPlayback({
   if (!is_active && !loading) {
     return (
       <>
-        <div className=" flex flex-col justify-center items-center h-screen -mt-20 gap-2">
+        <div className=" flex flex-col justify-center items-center h-screen -mt-20 gap-2 px-4">
           <h2 className="font-bold">
             Instance not active. Transfer your playback using your Spotify app
           </h2>
@@ -140,59 +139,67 @@ function WebPlayback({
             className="border rounded-xl shadow-xl bottom_center_align w-full max-w-md md:max-w-xl lg:max-w-5xl mx-auto -bottom-12 lg:bottom-5  px-10 flex items-center justify-between
         h-20 bg-gray-800 mb-10 md:mb-0"
           >
-            <button
-              disabled={!guest.host && true}
-              className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
-              onClick={() => {
-                onPreviousSong(roomCode, guest_id);
-              }}
-            >
-              <BackwardIcon />
-            </button>
+            {room?.guest_controller || guest.host ? (
+              <>
+                <button
+                  disabled={!guest.host && true}
+                  className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
+                  onClick={() => {
+                    onPreviousSong(roomCode, guest_id);
+                  }}
+                >
+                  <BackwardIcon />
+                </button>
 
-            {is_paused && player ? (
-              <button
-                disabled={!guest.host && true}
-                className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
-                onClick={() => {
-                  onPlay(roomCode, guest_id);
-                  sendSocketPlayPause(
-                    chatSocket,
-                    false,
-                    currentUri,
-                    currentPosition
-                  );
-                }}
-              >
-                <PlayIcon />
-              </button>
+                {is_paused && player ? (
+                  <button
+                    disabled={!guest.host && true}
+                    className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
+                    onClick={() => {
+                      onPlay(roomCode, guest_id);
+                      sendSocketPlayPause(
+                        chatSocket,
+                        false,
+                        currentUri,
+                        currentPosition
+                      );
+                    }}
+                  >
+                    <PlayIcon />
+                  </button>
+                ) : (
+                  <button
+                    disabled={!guest.host && true}
+                    className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
+                    onClick={() => {
+                      onPause(roomCode, guest_id);
+                      sendSocketPlayPause(
+                        chatSocket,
+                        true,
+                        currentUri,
+                        currentPosition
+                      );
+                    }}
+                  >
+                    <PauseIcon />
+                  </button>
+                )}
+
+                <button
+                  disabled={!guest.host && true}
+                  className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
+                  onClick={() => {
+                    onNextSong(roomCode, guest_id);
+                  }}
+                >
+                  <ForwardIcon />
+                </button>
+              </>
             ) : (
-              <button
-                disabled={!guest.host && true}
-                className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
-                onClick={() => {
-                  onPause(roomCode, guest_id);
-                  sendSocketPlayPause(
-                    chatSocket,
-                    true,
-                    currentUri,
-                    currentPosition
-                  );
-                }}
-              >
-                <PauseIcon />
-              </button>
+              <p className="text-white text-lg">
+                Guests do not have control over player
+              </p>
             )}
-
-            <button
-              disabled={!guest.host && true}
-              className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
-              onClick={() => {
-                onNextSong(roomCode, guest_id);
-              }}
-            >
-              <ForwardIcon />
-            </button>
           </div>
         </div>
       </>
