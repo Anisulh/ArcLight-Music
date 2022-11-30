@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const onPause = (roomCode, guest_id, websocket_controlled = false) => {
+export const onPause = (roomCode, guest_id, websocket_controlled = false, setError) => {
   const requestOptions = {
     method: "PUT",
     credentials: "include",
@@ -13,9 +13,16 @@ export const onPause = (roomCode, guest_id, websocket_controlled = false) => {
       websocket_controlled: websocket_controlled
     }),
   };
-  fetch("http://127.0.0.1:8000/spotify/pause", requestOptions);
+  try {
+
+    fetch("http://127.0.0.1:8000/spotify/pause", requestOptions);
+  } catch (error) {
+    setError("Unable to pause")
+    setTimeout(() => setError(null), 5000)
+  }
+
 };
-export const onPlay = (roomCode, guest_id, websocket_controlled = false) => {
+export const onPlay = (roomCode, guest_id, websocket_controlled = false, setError) => {
   const requestOptions = {
     method: "PUT",
     credentials: "include",
@@ -28,10 +35,16 @@ export const onPlay = (roomCode, guest_id, websocket_controlled = false) => {
       websocket_controlled: websocket_controlled
     }),
   };
-  fetch("http://127.0.0.1:8000/spotify/play", requestOptions);
+  try {
+    fetch("http://127.0.0.1:8000/spotify/play", requestOptions);
+  } catch (error) {
+    setError("Unable to play")
+    setTimeout(() => setError(null), 5000)
+  }
+
 };
 
-export const onNextSong = (roomCode, guest_id) => {
+export const onNextSong = (roomCode, guest_id, setError) => {
   const requestOptions = {
     method: "POST",
     credentials: "include",
@@ -43,57 +56,37 @@ export const onNextSong = (roomCode, guest_id) => {
       guest_id: guest_id,
     }),
   };
-  fetch("http://127.0.0.1:8000/spotify/next", requestOptions);
+  try {
+    fetch("http://127.0.0.1:8000/spotify/next", requestOptions);
+  } catch (error) {
+    setError("Unable to play next song")
+    setTimeout(() => setError(null), 5000)
+  }
+
 };
 
-export const onPreviousSong = (roomCode, guest_id) => {
+export const onPreviousSong = (roomCode, guest_id, setError) => {
+  const requestOptions = {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      room_code: roomCode,
+      guest_id: guest_id,
+    }),
+  };
   try {
-    const requestOptions = {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        room_code: roomCode,
-        guest_id: guest_id,
-      }),
-    };
     fetch("http://127.0.0.1:8000/spotify/prev", requestOptions);
   } catch (error) {
-    console.log(error)
+    setError("Unable to play previous song")
+    setTimeout(() => setError(null), 5000)
   }
 
 };
 
-export const fetchCurrentPlaying = async (room_code) => {
-  const requestOptions = {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      room_code: room_code,
-    }),
-  };
-  try {
-    const response = await fetch(
-      "http://127.0.0.1:8000/spotify/currently-playing",
-      requestOptions
-    );
-
-    if (!response.ok) {
-      return {};
-    } else {
-      return response.json();
-    }
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-export const authenticateSpotify = async (setRoomInfo, guest_id, setToken) => {
+export const authenticateSpotify = async (setRoomInfo, guest_id, setToken, setError) => {
   const requestOptions = {
     method: "POST",
     credentials: "include",
@@ -119,15 +112,14 @@ export const authenticateSpotify = async (setRoomInfo, guest_id, setToken) => {
         spotifyAuthenticated: true,
       }));
       setToken(data.token)
-    } else if (data.response) {
-      console.log(response);
     }
   } catch (error) {
-    console.log(error);
+    setError("Unable to authenticate with Spotify");
+    setTimeout(() => setError(null), 5000)
   }
 };
 
-export const fetchRedirect = async () => {
+export const fetchRedirect = async (setError) => {
   const guest = JSON.parse(localStorage.getItem("guest"));
   const requestOptions = {
     method: "POST",
@@ -144,19 +136,20 @@ export const fetchRedirect = async () => {
     );
     return response.json();
   } catch (error) {
-    console.log(error);
+    setError("Unable to log in");
+    setTimeout(() => setError(null), 5000)
   }
 };
 
 
-export const fetchSearch = async (query, type) => {
-  const room = JSON.parse(localStorage.getItem("recent_room"));
+export const fetchSearch = async (query, type, setError) => {
+  const guest = JSON.parse(localStorage.getItem("guest"));
   const requestOptions = {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      host_id: room.host_id,
+      guest_id: guest.guest_id,
       query: query,
       type: type
     }),
@@ -168,12 +161,13 @@ export const fetchSearch = async (query, type) => {
     );
     return response;
   } catch (error) {
-    console.log(error);
+    setError("Unable to preform search");
+    setTimeout(() => setError(null), 5000)
   }
 };
 
 
-export const sendSong = async (guest_id, songInfo, websocket_controlled = false) => {
+export const sendSong = async (guest_id, songInfo, websocket_controlled = false, setError) => {
   const { uri, position } = songInfo
   const requestOptions = {
     method: "PUT",
@@ -190,12 +184,12 @@ export const sendSong = async (guest_id, songInfo, websocket_controlled = false)
     await fetch("http://127.0.0.1:8000/spotify/set-track",
       requestOptions)
   } catch (error) {
-    console.log(error)
+    setError("Unable to update track")
+    setTimeout(() => setError(null), 5000)
   }
 }
 
-export const transferPlayback = async (token, device_id) => {
-
+export const transferPlayback = async (token, device_id, setError) => {
   try {
     await axios.put("https://api.spotify.com/v1/me/player", { device_ids: [device_id], play: true },
       {
@@ -205,7 +199,8 @@ export const transferPlayback = async (token, device_id) => {
       }
     )
   } catch (error) {
-    console.log(error)
+    setError("Unable to transfer playback")
+    setTimeout(() => setError(null), 5000)
   }
 
 }

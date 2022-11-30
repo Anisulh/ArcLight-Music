@@ -2,7 +2,7 @@ import { Fragment, useRef, useState } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import Bars3Icon from "@heroicons/react/24/outline/Bars3Icon";
 import XMarkIcon from "@heroicons/react/24/outline/XMarkIcon";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import NickNameModal from "./NickNameModal";
 import { SiAzurefunctions } from "react-icons/si";
 import { leaveSession } from "../services/guestService";
@@ -36,7 +36,6 @@ export default function NavBar({ homeRef, featureRef }) {
   };
   const onLeave = async () => {
     const response = await leaveSession(setError);
-    console.log(response);
     if (response.ok) {
       localStorage.removeItem("guest");
       localStorage.removeItem("recent_room");
@@ -84,7 +83,6 @@ export default function NavBar({ homeRef, featureRef }) {
                             ? navigate("/")
                             : item.ref.current?.scrollIntoView();
 
-                          console.log(item.ref.current);
                           onNavClick();
                         }}
                         className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
@@ -161,7 +159,6 @@ export default function NavBar({ homeRef, featureRef }) {
                       ? navigate("/")
                       : item.ref.current?.scrollIntoView();
 
-                    console.log(item.ref.current);
                     onNavClick();
                   }}
                 >

@@ -155,7 +155,7 @@ function Chat({ openChat, setOpenChat, chatSocket, messages }) {
       duration-150
       ease-in-outborder-2 "
                           >
-                            Submit
+                            Send
                           </button>
                         </form>
                       </div>

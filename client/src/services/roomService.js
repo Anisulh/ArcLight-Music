@@ -1,5 +1,5 @@
 
-export const fetchRoomInfo = async (roomCode, setRoomInfo) => {
+export const fetchRoomInfo = async (roomCode, setRoomInfo, setError) => {
   try {
     const requestOptions = {
       method: "GET",
@@ -12,7 +12,8 @@ export const fetchRoomInfo = async (roomCode, setRoomInfo) => {
     setRoomInfo((prevState) => ({ ...prevState, ...data }));
     return;
   } catch (error) {
-    console.log(error);
+    setError("Unable to get room info");
+    setTimeout(() => setError(null), 5000)
   }
 };
 
@@ -33,11 +34,12 @@ export const createRoom = async (name, guestController, guestData, setError) => 
     );
     return response.json();
   } catch (error) {
-    setError(`${error}`);
+    setError("Unable to create room");
+    setTimeout(() => setError(null), 5000)
   }
 };
 
-export const joinRoom = async (code) => {
+export const joinRoom = async (code, setError) => {
   const guest = JSON.parse(localStorage.getItem("guest"));
   const requestOptions = {
     method: "POST",
@@ -53,7 +55,8 @@ export const joinRoom = async (code) => {
     );
     return response.json();
   } catch (error) {
-    console.log(error);
+    setError("Unable to join room");
+    setTimeout(() => setError(null), 5000)
   }
 };
 
@@ -76,8 +79,8 @@ export const saveRoomInfo = async (host_id, name, guest_controller, roomCode, se
     );
     return response;
   } catch (error) {
-    console.log(error);
     setError("Unable to update room settings.")
+    setTimeout(() => setError(null), 5000)
   }
 };
 
@@ -111,9 +114,11 @@ export const leaveRoom = async (setError) => {
       return true;
     } else {
       setError("Unable to leave room.");
+      setTimeout(() => setError(null), 5000)
       return false;
     }
   } catch (error) {
-    console.log(error);
+    setError("Unable to leave room");
+    setTimeout(() => setError(null), 5000)
   }
 };

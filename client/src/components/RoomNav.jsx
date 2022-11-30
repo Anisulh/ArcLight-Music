@@ -2,12 +2,13 @@ import { Disclosure, Menu, Transition } from "@headlessui/react";
 import MagnifyingGlassIcon from "@heroicons/react/24/outline/MagnifyingGlassIcon";
 import EllipsisVerticalIcon from "@heroicons/react/24/outline/EllipsisVerticalIcon";
 import ChatBubbleBottomCenterIcon from "@heroicons/react/24/outline/ChatBubbleBottomCenterIcon";
-import React from "react";
+import React, { useState } from "react";
 import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import ToolTip from "./ToolTip";
 import { leaveRoom } from "../services/roomService";
 import SearchMusic from "./SearchMusic";
+import Error from "./Error";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -27,14 +28,21 @@ function RoomNav({
   const settings = () => {
     setModalOpen(true);
   };
+  const [error, setError] = useState(null);
   const onLeaveClick = async () => {
     const success = await leaveRoom();
-    success ? navigate("/") : console.log("unable to leave room");
+    if (success) {
+      navigate("/");
+    } else {
+      setError("unable to leave room");
+      setTimeout(() => setError(null), 5000);
+    }
   };
 
   return (
     <Disclosure as="nav" className="bg-gray-800">
       <>
+        {error && <Error message={error} />}
         <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
           <div className="relative flex h-16 items-center justify-between ">
             <div className="flex flex-1  items-stretch justify-start">

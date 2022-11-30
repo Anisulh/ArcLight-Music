@@ -12,7 +12,6 @@ from ..serializers import CreateRoomSerializer, RoomSerializer
 def RoomView(request, format=None):
     if request.method == "POST":
         serializer = RoomSerializer(data=request.data)
-        print(serializer)
         if serializer.is_valid():
             host_id = serializer.validated_data.get("host_id")
             try:
@@ -73,13 +72,10 @@ def SpecificRoomView(request, room_code, format=None):
             return Response(
                 {"error": "guest not found"}, status=status.HTTP_404_NOT_FOUND
             )
-        print("guest exists")
         if room.host_id == guest_id:
-            print("guest is the host")
             room.delete()
             return Response(status=status.HTTP_200_OK)
         else:
-            print("guest is not the host")
             room.leave(query_guest)
             return Response(RoomSerializer(room).data, status=status.HTTP_200_OK)
     return Response({"error": "something went wrong"}, status=status.HTTP_404_NOT_FOUND)

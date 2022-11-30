@@ -14,10 +14,8 @@ BASE_URL = "https://api.spotify.com/v1/me/"
 def get_user_tokens(guest):
     try:
         user_tokens = SpotifyToken.objects.get(user=guest)
-        print("get_user_tokens: tokens exist")
         return user_tokens
     except SpotifyToken.DoesNotExist:
-        print("get_user_tokens: tokens do not exist")
         return None
 
 
@@ -28,7 +26,6 @@ def update_or_create_user_tokens(
     expires_in = timezone.now() + timedelta(seconds=expires_in)
 
     if tokens:
-        print("update_or_create_user-tokens: tokens already exists")
         tokens.access_token = access_token
         tokens.refresh_token = refresh_token
         tokens.expires_in = expires_in
@@ -36,9 +33,7 @@ def update_or_create_user_tokens(
         tokens.save(
             update_fields=["access_token", "refresh_token", "expires_in", "token_type"]
         )
-        print("update_or_create_user-tokens: tokens updated")
     else:
-        print("update_or_create_user-tokens: tokens dont exists")
         tokens = SpotifyToken(
             user=guest,
             access_token=access_token,
@@ -48,21 +43,14 @@ def update_or_create_user_tokens(
         )
 
         tokens.save()
-        print("update_or_create_user-tokens: tokens created")
-
-
-# checks if user has a token and if they do then refreshes it
 
 
 def check_token_if_valid(guest, respond=False):
     tokens = get_user_tokens(guest)
     if tokens:
-        print("check_token_if_valid: tokens exist")
         expiry = tokens.expires_in
         if expiry <= timezone.now():
-            print("check_token_if_valid: tokens expired")
             refresh_spotify_token(guest)
-            print("check_token_if_valid: tokens refreshed")
             if respond:
                 token = get_user_tokens(guest)
                 return token.access_token
@@ -70,13 +58,11 @@ def check_token_if_valid(guest, respond=False):
             token = get_user_tokens(guest)
             return token.access_token
         return True
-    print("check_token_if_valid: tokens dont exist")
     return False
 
 
 def refresh_spotify_token(guest):
     refresh_token = get_user_tokens(guest).refresh_token
-    print("refreshing tokens")
     response = post(
         "https://accounts.spotify.com/api/token",
         data={
@@ -102,20 +88,16 @@ def execute_spotify_api_request(guest, endpoint, post_=False, put_=False, url=BA
         "Content-Type": "application/json",
         "Authorization": "Bearer " + tokens.access_token,
     }
-    print(tokens.access_token)
     if post_:
-        response = post(url + endpoint, headers=headers)
+        post(url + endpoint, headers=headers)
     elif put_:
-        print("putting")
-        response = put(url + endpoint, headers=headers)
-        print(response)
+        put(url + endpoint, headers=headers)
 
     else:
-        response = get(url + endpoint, {}, headers=headers)
+        get(url + endpoint, {}, headers=headers)
     try:
-        return response.json()
+        return "success"
     except:
-        print("error")
         return {"error": "Issue with request"}
 
 
@@ -145,29 +127,29 @@ def search_function(query, types, limit, guest):
 
 
 def set_track(guest, uri, position=0):
-    print("setting track")
-    tokens = get_user_tokens(guest)
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + tokens.access_token,
-    }
-    data = {
-        "uris": [uri],
-        "offset": {"position": 0},
-        "position_ms": position,
-    }
+    try:
+        tokens = get_user_tokens(guest)
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + tokens.access_token,
+        }
+        data = {
+            "uris": [uri],
+            "offset": {"position": 0},
+            "position_ms": position,
+        }
 
-    response = put(
-        BASE_URL + "player/play",
-        data=json.dumps(data),
-        headers=headers,
-    )
-    print("response:", response)
-    return response.json()
+        put(
+            BASE_URL + "player/play",
+            data=json.dumps(data),
+            headers=headers,
+        )
+        return "success"
+    except:
+        return {"error": "Issue with request"}
 
 
 def transfer_play(guest, device_id):
-    print(guest, device_id)
     try:
         tokens = get_user_tokens(guest)
         headers = {
@@ -176,9 +158,7 @@ def transfer_play(guest, device_id):
         }
         data = {"device_ids": [device_id]}
 
-        response = put(BASE_URL + "player", data=json.dumps(data), headers=headers)
-        print("response:", response)
-        return response.json()
+        put(BASE_URL + "player", data=json.dumps(data), headers=headers)
+        return "success"
     except:
-        print("error")
         return {"error": "Issue with request"}

@@ -43,6 +43,7 @@ function WebPlayback({
   const [currentPosition, setPosition] = useState(null);
   const [currentUri, setCurrentUri] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -65,11 +66,11 @@ function WebPlayback({
       player.addListener("ready", ({ device_id }) => {
         setDeviceID(device_id);
         setLoading(false);
-        console.log("Ready with Device ID", device_id);
       });
 
       player.addListener("not_ready", ({ device_id }) => {
-        console.log("Device ID has gone offline", device_id);
+        setError("Device ID has gone offline", device_id);
+        setTimeout(() => setError(null), 5000);
       });
 
       player.addListener("player_state_changed", (state) => {
@@ -86,7 +87,14 @@ function WebPlayback({
 
       player.connect();
     };
-    onChatMessage(chatSocket, setMessages, roomCode, guest_id, currentUri);
+    onChatMessage(
+      chatSocket,
+      setMessages,
+      roomCode,
+      guest_id,
+      currentUri,
+      setError
+    );
   }, []);
 
   useEffect(() => {
@@ -100,13 +108,14 @@ function WebPlayback({
   if (!is_active && !loading) {
     return (
       <>
+        {error && <Error message={error} />}
         <div className=" flex flex-col justify-center items-center h-screen -mt-20 gap-2 px-4">
           <h2 className="font-bold">
             Instance not active. Transfer your playback using your Spotify app
           </h2>
           <button
             className="rounded-lg p-2 text-lg font-medium bg-blue-600 text-white"
-            onClick={() => transferPlayback(token, deviceID)}
+            onClick={() => transferPlayback(token, deviceID, setError)}
           >
             Activate
           </button>
@@ -120,6 +129,7 @@ function WebPlayback({
   } else {
     return (
       <>
+        {error && <Error message={error} />}
         <div>
           {currentTrack && (
             <div className="absolute left-0 right-0 bottom-0 top-0 m-auto w-fit h-fit">
@@ -137,7 +147,7 @@ function WebPlayback({
           )}
           <div
             className="border rounded-xl shadow-xl bottom_center_align w-full max-w-md md:max-w-xl lg:max-w-5xl mx-auto -bottom-12 lg:bottom-5  px-10 flex items-center justify-between
-        h-20 bg-gray-800 mb-10 md:mb-0"
+        h-20 bg-gray-800 mb-10 "
           >
             {room?.guest_controller || guest.host ? (
               <>
@@ -145,7 +155,7 @@ function WebPlayback({
                   disabled={!guest.host && true}
                   className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
                   onClick={() => {
-                    onPreviousSong(roomCode, guest_id);
+                    onPreviousSong(roomCode, guest_id, setError);
                   }}
                 >
                   <BackwardIcon />
@@ -156,7 +166,7 @@ function WebPlayback({
                     disabled={!guest.host && true}
                     className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
                     onClick={() => {
-                      onPlay(roomCode, guest_id);
+                      onPlay(roomCode, guest_id, setError);
                       sendSocketPlayPause(
                         chatSocket,
                         false,
@@ -172,7 +182,7 @@ function WebPlayback({
                     disabled={!guest.host && true}
                     className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
                     onClick={() => {
-                      onPause(roomCode, guest_id);
+                      onPause(roomCode, guest_id, setError);
                       sendSocketPlayPause(
                         chatSocket,
                         true,
@@ -189,7 +199,7 @@ function WebPlayback({
                   disabled={!guest.host && true}
                   className="cursor-pointer rounded-lg m-2 h-8 w-8 hover:bg-white hover:text-gray-800 text-white"
                   onClick={() => {
-                    onNextSong(roomCode, guest_id);
+                    onNextSong(roomCode, guest_id, setError);
                   }}
                 >
                   <ForwardIcon />

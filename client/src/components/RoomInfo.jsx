@@ -42,7 +42,6 @@ function RoomInfo({ modalOpen, setModalOpen }) {
       setError
     );
     const data = await response.json();
-    console.log(data);
     if (response.ok) {
       localStorage.setItem("recent_room", JSON.stringify(data));
       roomInfo = JSON.parse(localStorage.getItem("recent_room"));
@@ -75,7 +74,7 @@ function RoomInfo({ modalOpen, setModalOpen }) {
         >
           <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
         </Transition.Child>
-
+        {error && <Error message={error} />}
         <div className="fixed left-0 right-0  top-1/4">
           <div className="m-auto flex items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <Transition.Child
@@ -152,7 +151,7 @@ function RoomInfo({ modalOpen, setModalOpen }) {
                       </div>
                     </dl>
                   </div>
-                  {error && <Error message={error} />}
+
                   {edit ? (
                     <>
                       <div className="flex items-center justify-center my-2 mt-3 ">

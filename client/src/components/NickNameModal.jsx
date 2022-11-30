@@ -1,12 +1,13 @@
 import { useState } from "react";
 import React, { Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Error from "./Error";
 import { saveNickName } from "../services/guestService";
 
 function NickNameModal({ nicknameOpen, cancelButtonRef, setNicknameOpen }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [nickname, setNickname] = useState("");
   const [error, setError] = useState(null);
   const onFormSubmit = async (e) => {
@@ -18,7 +19,10 @@ function NickNameModal({ nicknameOpen, cancelButtonRef, setNicknameOpen }) {
     const data = await response.json();
     if (response.ok) {
       localStorage.setItem("guest", JSON.stringify(data));
-      navigate("/room");
+      if (!location.pathname.includes("/room/")) {
+        navigate("/room");
+      }
+
       setNicknameOpen(false);
     } else {
       setError("Unable to set Nickname.");

@@ -10,7 +10,7 @@ function JoinRoomForm() {
   const [error, setError] = useState(null);
   const onFormSubmission = async (e) => {
     e.preventDefault();
-    const response = await joinRoom(code);
+    const response = await joinRoom(code, setError);
 
     if (response.code) {
       let temp;

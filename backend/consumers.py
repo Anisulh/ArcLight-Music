@@ -34,20 +34,24 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        print("recieved")
 
         # Send message to room group
         if "player" in text_data_json:
             _type = text_data_json["player"]["_type"]
             uri = text_data_json["player"]["uri"]
-            position = text_data_json["player"]["position"] 
+            position = text_data_json["player"]["position"]
             paused = text_data_json["player"]["paused"]
             await self.channel_layer.group_send(
                 self.room_group_name,
-                {"type": "spotify_message", "_type": _type, "uri": uri, "position": position, "paused": paused},
+                {
+                    "type": "spotify_message",
+                    "_type": _type,
+                    "uri": uri,
+                    "position": position,
+                    "paused": paused,
+                },
             )
         elif "connection" in text_data_json:
-            print(text_data_json["connection"])
             guest = text_data_json["connection"]["guest_id"]
             nickname = await self.get_guest(guest)
             await self.channel_layer.group_send(
@@ -101,5 +105,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         paused = event["paused"]
         # Send message to WebSocket
         await self.send(
-            text_data=json.dumps({"spotify": {"_type":_type, "uri": uri, "position": position, "paused": paused}})
+            text_data=json.dumps(
+                {
+                    "spotify": {
+                        "_type": _type,
+                        "uri": uri,
+                        "position": position,
+                        "paused": paused,
+                    }
+                }
+            )
         )

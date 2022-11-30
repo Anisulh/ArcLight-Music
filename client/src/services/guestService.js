@@ -25,14 +25,13 @@ export const saveNickName = async (nickname, setError) => {
     );
     return response;
   } catch (error) {
-    console.log(error);
-    setError("Unable to set Nickname.")
+    setError("Unable to set Nickname.");
+    setTimeout(() => setError(null), 5000);
+
   }
 };
 
 export const leaveSession = async () => {
-  const guest = JSON.parse(localStorage.getItem("guest"));
-  console.log(guest.guest_id)
   const requestOptions = {
     method: "DELETE",
     credentials: "include",
@@ -45,8 +44,7 @@ export const leaveSession = async () => {
     );
     return response;
   } catch (error) {
-    console.log(error);
     setError("Unable to leave room.");
-    setTimeout(() => setError(null), 5000)
+    setTimeout(() => setError(null), 5000);
   }
 }

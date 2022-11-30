@@ -2,9 +2,11 @@ import { Dialog, Transition } from "@headlessui/react";
 import React, { Fragment, useState } from "react";
 import { fetchSearch } from "../services/spotifyServices";
 import SearchResult from "../components/SearchResult";
+import Error from "./Error";
 
 function SearchMusic({ guest_id, chatSocket }) {
   const [resultModalOpen, setResultModalOpen] = useState(false);
+  const [error, setError] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
   const [searchFormData, setSearchData] = useState({
     query: "",
@@ -19,7 +21,7 @@ function SearchMusic({ guest_id, chatSocket }) {
   };
   const onSearchSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetchSearch(query, type);
+    const response = await fetchSearch(query, type, setError);
     if (response.ok) {
       const data = await response.json();
       if (data.tracks) {
@@ -32,8 +34,9 @@ function SearchMusic({ guest_id, chatSocket }) {
     setSearchData({ query: "", type: "track" });
   };
   return (
-    <div className="fixed top-36 sm:top-30 md:right-36 z-10 xl:right-auto">
-      <div className="relative">
+    <>
+    {error && <Error message={error}/>}
+    <div className="fixed top-36 sm:top-30 md:right-36 z-10 xl:right-auto ">
         <form onSubmit={onSearchSubmit}>
           <label
             htmlFor="default-search"
@@ -70,8 +73,8 @@ function SearchMusic({ guest_id, chatSocket }) {
               id="wrapper"
               onClose={() => setResultModalOpen(false)}
             >
-              <div className="fixed">
-                <div className="p-4 text-center  sm:items-center sm:p-0 w-fit">
+              <div className="fixed mt-3 top-52 sm:top-30 search-right z-10  ">
+                <div className="text-center sm:p-0 w-fit">
                   <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-300"
@@ -103,7 +106,8 @@ function SearchMusic({ guest_id, chatSocket }) {
         </div>
         
       </div>
-    </div>
+    </>
+    
   );
 }
 

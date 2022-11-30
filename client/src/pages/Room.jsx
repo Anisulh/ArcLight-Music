@@ -8,11 +8,13 @@ import Chat from "../components/Chat";
 import ClipboardDocumentIcon from "@heroicons/react/24/outline/ClipboardDocumentIcon";
 import WebPlayback from "../components/WebPlayback";
 import ToolTip from "../components/ToolTip";
+import Error from "../components/Error";
 
 function Room() {
   const { roomCode } = useParams();
   const guest = JSON.parse(localStorage.getItem("guest"));
   const [token, setToken] = useState(null);
+  const [error, setError] = useState(null);
   const [roomInfo, setRoomInfo] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [openChat, setOpenChat] = useState(false);
@@ -25,8 +27,8 @@ function Room() {
   );
 
   useEffect(() => {
-    fetchRoomInfo(roomCode, setRoomInfo);
-    authenticateSpotify(setRoomInfo, guest.guest_id, setToken);
+    fetchRoomInfo(roomCode, setRoomInfo, setError);
+    authenticateSpotify(setRoomInfo, guest.guest_id, setToken, setError);
   }, []);
 
   useEffect(() => {
@@ -36,11 +38,12 @@ function Room() {
           connection: { guest_id: guest.guest_id },
         })
       );
-      console.log("Successfully connected to the WebSocket.");
     };
   }, []);
 
   return (
+    <>
+    {error && <Error message={error}/>}
     <div>
       <RoomNav
         setModalOpen={setModalOpen}
@@ -103,6 +106,8 @@ function Room() {
         )}
       </div>
     </div>
+    </>
+    
   );
 }
 

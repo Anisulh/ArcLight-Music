@@ -18,11 +18,9 @@ def GuestView(request, format=None):
             serializer.save()
             request.session["guest_id"] = serializer.data.get("guest_id")
             request.session.modified = True
-            print("session", serializer.data.get("guest_id"))
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     if request.method == "PATCH":
-        print("session", request.session.get("guest_id"))
         try:
             guest = Guest.objects.get(pk=request.session.get("guest_id"))
         except Guest.DoesNotExist:
