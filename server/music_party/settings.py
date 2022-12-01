@@ -31,7 +31,7 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["arclight-music-production.up.railway.app"]
+ALLOWED_HOSTS = ["arclight-music-production.up.railway.app", "arclight-music-backend-production.up.railway.app"]
 
 SECURE_HSTS_SECONDS = 3600
 SECURE_HSTS_PRELOAD = True
@@ -50,6 +50,7 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^http:\/\/127.0.0.1:5173$",
     r"^https:\/\/arclight-music-production.up.railway.app$",
+    r"^https:\/\/arclight-music-backend-production.up.railway.app$"
 ]
 CORS_ALLOW_HEADERS = [
     "accept",
