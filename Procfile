@@ -1,1 +1,1 @@
-web: python manage.py migrate && gunicorn music_party.wsgi
+web: python manage.py migrate && gunicorn daphne music_party.asgi:application
