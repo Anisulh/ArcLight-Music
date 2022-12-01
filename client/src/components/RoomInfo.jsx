@@ -8,9 +8,9 @@ import Error from "./Error";
 
 function RoomInfo({ modalOpen, setModalOpen }) {
   const { roomCode } = useParams();
-  const roomInfo = JSON.parse(localStorage.getItem("recent_room"));
+  const room = JSON.parse(localStorage.getItem("recent_room"));
   const guest = JSON.parse(localStorage.getItem("guest"));
-  const [roomSettings, setRoomSettings] = useState({ ...roomInfo });
+  const [roomSettings, setRoomSettings] = useState({ ...room });
   const { name, host_id, guest_controller } = roomSettings;
 
   const [edit, setEdit] = useState(false);
@@ -44,7 +44,7 @@ function RoomInfo({ modalOpen, setModalOpen }) {
     const data = await response.json();
     if (response.ok) {
       localStorage.setItem("recent_room", JSON.stringify(data));
-      roomInfo = JSON.parse(localStorage.getItem("recent_room"));
+      const roomInfo = JSON.parse(localStorage.getItem("recent_room"));
       setRoomSettings({ ...roomInfo });
       setEdit(false);
       setModalOpen(false);
@@ -100,7 +100,7 @@ function RoomInfo({ modalOpen, setModalOpen }) {
                         onChange={onFormChange}
                       />
                     ) : (
-                      roomInfo && roomInfo.name
+                      room && room.name
                     )}
                   </h3>
 
@@ -116,7 +116,7 @@ function RoomInfo({ modalOpen, setModalOpen }) {
                           Room Code:
                         </dt>
                         <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                          {roomInfo ? roomInfo.code : roomCode}
+                          {room ? room.code : roomCode}
                         </dd>
                       </div>
                       <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -142,7 +142,7 @@ function RoomInfo({ modalOpen, setModalOpen }) {
                               />
                               <label htmlFor="false"> False</label>
                             </>
-                          ) : roomInfo && roomInfo.guest_controller ? (
+                          ) : room && room.guest_controller ? (
                             "Enabled"
                           ) : (
                             "Disabled"
