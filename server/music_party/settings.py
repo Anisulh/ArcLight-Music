@@ -31,7 +31,7 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["arclight-music-production.up.railway.app", "arclight-music-backend-production.up.railway.app"]
+ALLOWED_HOSTS = ['*']
 
 SECURE_HSTS_SECONDS = 3600
 SECURE_HSTS_PRELOAD = True
