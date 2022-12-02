@@ -1,3 +1,4 @@
+const BASE_URL = 'https://arclight-music-backend-production.up.railway.app/';
 export const saveNickName = async (nickname, setError) => {
   const guest = JSON.parse(localStorage.getItem("guest"));
   //if guest doesn't exist then send POST request to create a new guest; if guest already exists then update the nickname
@@ -20,7 +21,7 @@ export const saveNickName = async (nickname, setError) => {
     };
   try {
     const response = await fetch(
-      "http://127.0.0.1:8000/api/guest",
+      BASE_URL + "api/guest",
       requestOptions
     );
     return response;
@@ -39,7 +40,7 @@ export const leaveSession = async () => {
   }
   try {
     const response = await fetch(
-      "http://127.0.0.1:8000/api/guest",
+      BASE_URL + "api/guest",
       requestOptions
     );
     return response;

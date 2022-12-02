@@ -1,3 +1,4 @@
+const BASE_URL = 'https://arclight-music-backend-production.up.railway.app/';
 
 export const fetchRoomInfo = async (roomCode, setRoomInfo, setError) => {
   try {
@@ -5,7 +6,7 @@ export const fetchRoomInfo = async (roomCode, setRoomInfo, setError) => {
       method: "GET",
     };
     const response = await fetch(
-      `http://127.0.0.1:8000/api/room/${roomCode}`,
+      `${BASE_URL}api/room/${roomCode}`,
       requestOptions
     );
     const data = await response.json();
@@ -29,7 +30,7 @@ export const createRoom = async (name, guestController, guestData, setError) => 
   };
   try {
     const response = await fetch(
-      "http://127.0.0.1:8000/api/room",
+      BASE_URL + "api/room",
       requestOptions
     );
     return response.json();
@@ -50,7 +51,7 @@ export const joinRoom = async (code, setError) => {
   };
   try {
     const response = await fetch(
-      `http://127.0.0.1:8000/api/room/${code}`,
+      `${BASE_URL}api/room/${code}`,
       requestOptions
     );
     return response.json();
@@ -74,7 +75,7 @@ export const saveRoomInfo = async (host_id, name, guest_controller, roomCode, se
   };
   try {
     const response = await fetch(
-      `http://127.0.0.1:8000/api/room/${roomCode}`,
+      `${BASE_URL}api/room/${roomCode}`,
       requestOptions
     );
     return response;
@@ -98,11 +99,9 @@ export const leaveRoom = async (setError) => {
   };
   try {
     const response = await fetch(
-      `http://127.0.0.1:8000/api/room/${code}`,
+      `${BASE_URL}api/room/${code}`,
       requestOptions
     );
-
-
     if (response.ok) {
       guest.host = false;
       delete guest.room

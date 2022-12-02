@@ -1,4 +1,5 @@
 import axios from 'axios';
+const BASE_URL = 'https://arclight-music-backend-production.up.railway.app/';
 
 export const onPause = (roomCode, guest_id, websocket_controlled = false, setError) => {
   const requestOptions = {
@@ -15,7 +16,7 @@ export const onPause = (roomCode, guest_id, websocket_controlled = false, setErr
   };
   try {
 
-    fetch("http://127.0.0.1:8000/spotify/pause", requestOptions);
+    fetch(BASE_URL + "spotify/pause", requestOptions);
   } catch (error) {
     setError("Unable to pause")
     setTimeout(() => setError(null), 5000)
@@ -36,7 +37,7 @@ export const onPlay = (roomCode, guest_id, websocket_controlled = false, setErro
     }),
   };
   try {
-    fetch("http://127.0.0.1:8000/spotify/play", requestOptions);
+    fetch(BASE_URL + "spotify/play", requestOptions);
   } catch (error) {
     setError("Unable to play")
     setTimeout(() => setError(null), 5000)
@@ -57,7 +58,7 @@ export const onNextSong = (roomCode, guest_id, setError) => {
     }),
   };
   try {
-    fetch("http://127.0.0.1:8000/spotify/next", requestOptions);
+    fetch(BASE_URL + "spotify/next", requestOptions);
   } catch (error) {
     setError("Unable to play next song")
     setTimeout(() => setError(null), 5000)
@@ -78,7 +79,7 @@ export const onPreviousSong = (roomCode, guest_id, setError) => {
     }),
   };
   try {
-    fetch("http://127.0.0.1:8000/spotify/prev", requestOptions);
+    fetch(BASE_URL + "spotify/prev", requestOptions);
   } catch (error) {
     setError("Unable to play previous song")
     setTimeout(() => setError(null), 5000)
@@ -99,7 +100,7 @@ export const authenticateSpotify = async (setRoomInfo, guest_id, setToken, setEr
   };
   try {
     const response = await fetch(
-      "http://127.0.0.1:8000/spotify/authenticate",
+      BASE_URL + "spotify/authenticate",
       requestOptions
     );
     const data = await response.json();
@@ -131,7 +132,7 @@ export const fetchRedirect = async (setError) => {
   };
   try {
     const response = await fetch(
-      "http://127.0.0.1:8000/spotify/redirect",
+      BASE_URL + "spotify/redirect",
       requestOptions
     );
     return response.json();
@@ -156,7 +157,7 @@ export const fetchSearch = async (query, type, setError) => {
   };
   try {
     const response = await fetch(
-      "http://127.0.0.1:8000/spotify/search",
+      BASE_URL + "spotify/search",
       requestOptions
     );
     return response;
@@ -181,7 +182,7 @@ export const sendSong = async (guest_id, songInfo, websocket_controlled = false,
     }),
   };
   try {
-    await fetch("http://127.0.0.1:8000/spotify/set-track",
+    await fetch(BASE_URL + "spotify/set-track",
       requestOptions)
   } catch (error) {
     setError("Unable to update track")
