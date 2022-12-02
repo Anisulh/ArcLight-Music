@@ -30,7 +30,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['arclight-music-backend-production.up.railway.app', 'arclight-music-production.up.railway.app']
 
 SECURE_HSTS_SECONDS = 3600
 SECURE_HSTS_PRELOAD = True
@@ -44,13 +44,13 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_SAMESITE = "None"
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOW_CREDENTIALS = True
-# CORS_ALLOWED_ORIGIN_REGEXES = [
-#     r"^http:\/\/127.0.0.1:5173$",
-#     r"^https:\/\/arclight-music-production.up.railway.app$",
-#     r"^https:\/\/arclight-music-backend-production.up.railway.app$"
-# ]
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http:\/\/127.0.0.1:5173$",
+    r"^https:\/\/arclight-music-production.up.railway.app$",
+    r"^https:\/\/arclight-music-backend-production.up.railway.app$"
+]
 CORS_ALLOW_HEADERS = [
     "accept",
     "accept-encoding",
@@ -92,7 +92,6 @@ CHANNEL_LAYERS = {
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-     'whitenoise.middleware.WhiteNoiseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
