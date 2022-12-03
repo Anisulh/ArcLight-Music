@@ -24,7 +24,7 @@ function Room() {
   const [deviceID, setDeviceID] = useState(null);
   const [chatSocket, setChatSocket] = useState(
     new WebSocket(
-      `ws://arclight-music-backend-production.up.railway.app/ws/chat/${roomCode}/`
+      `wss://arclight-music-backend-production.up.railway.app/ws/chat/${roomCode}/`
     )
   );
 
