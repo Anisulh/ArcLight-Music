@@ -99,7 +99,7 @@ def spotifyCallback(request, format=None):
         ).json()
         request.session["response"] = response
         request.session.modified = True
-        return redirect("http://127.0.0.1:5173/redirect")
+        return redirect("https://arclight-music-production.up.railway.app/redirect")
 
     if request.method == "POST":
         response = request.session.get("response")
